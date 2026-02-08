@@ -1,0 +1,74 @@
+{
+  "dataset": "C:\\dev\\EurPlnTracker\\data\\eur_a.csv",
+  "n_rows_used": 1240,
+  "test_size_samples": 260,
+  "features": [
+    "value",
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_5",
+    "lag_10",
+    "lag_20",
+    "logret_1",
+    "roll_mean_5",
+    "roll_mean_10",
+    "roll_std_5",
+    "roll_std_10",
+    "vol_10",
+    "dow"
+  ],
+  "baseline_persistence": {
+    "MAE": 0.00758576923076922,
+    "RMSE": 0.010955892338056132,
+    "MAPE_pct": 0.17898251184004177,
+    "dir_acc": null
+  },
+  "baseline_ma5": {
+    "MAE": 0.012093692307692258,
+    "RMSE": 0.01765267005299763,
+    "MAPE_pct": 0.2854739119930047,
+    "dir_acc": 0.5307692307692308
+  },
+  "baseline_momentum": {
+    "MAE": 0.011373076923076946,
+    "RMSE": 0.015520946144831838,
+    "MAPE_pct": 0.2683441978746109,
+    "dir_acc": 0.4423076923076923
+  },
+  "ridge_delta": {
+    "MAE": 0.007635245091841848,
+    "RMSE": 0.010965282023797944,
+    "MAPE_pct": 0.180166596190843,
+    "dir_acc": 0.46153846153846156
+  },
+  "random_forest_delta": {
+    "MAE": 0.007843187142363572,
+    "RMSE": 0.011134954273540115,
+    "MAPE_pct": 0.18507196529698072,
+    "dir_acc": 0.46923076923076923
+  },
+  "ridge_best_params": {
+    "model__alpha": 4061.585988376988
+  },
+  "rf_best_params": {
+    "n_estimators": 800,
+    "min_samples_split": 20,
+    "min_samples_leaf": 8,
+    "max_features": "sqrt",
+    "max_depth": 6
+  },
+  "tuning": {
+    "enabled": true,
+    "ts_splits": 6,
+    "ridge_iters": 80,
+    "rf_iters": 180
+  },
+  "next_day_forecast": {
+    "last_date": "2026-02-05",
+    "today_value": 4.2175,
+    "baseline": 4.2175,
+    "ridge_delta": 4.217872441378824,
+    "rf_delta": 4.217767489656786
+  }
+}
