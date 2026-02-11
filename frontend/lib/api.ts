@@ -53,7 +53,12 @@ export type ErrorTestRow = {
 };
 
 const DEFAULT_BASE = "http://127.0.0.1:8000";
-const RAW_BASE = (import.meta.env.VITE_API_URL ?? DEFAULT_BASE).trim();
+// kompatybilność: README często używa VITE_API_BASE_URL
+const RAW_BASE = (
+  import.meta.env.VITE_API_BASE_URL ??
+  import.meta.env.VITE_API_URL ??
+  DEFAULT_BASE
+).trim();
 const API_BASE = RAW_BASE ? RAW_BASE.replace(/\/$/, "") : "";
 
 function url(path: string) {

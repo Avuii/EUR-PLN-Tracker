@@ -29,9 +29,51 @@ function fmtRatePLN(x: number | null | undefined) {
   return x.toFixed(4).replace(".", ",");
 }
 
-function pickMetricPack(metrics: any) {
-  if (!metrics) return null;
-  return metrics?.best ?? metrics?.rf ?? metrics?.ridge ?? metrics?.baseline ?? metrics;
+function getMetric(pack: any, key: string): unknown {
+  if (!pack) return undefined;
+  const keys = [key, key.toUpperCase(), key.toLowerCase()];
+  for (const k of keys) {
+    if (pack?.[k] !== undefined) return pack[k];
+  }
+  return undefined;
+}
+
+function extractMetricPacks(metrics: any): Array<{ name: string; pack: any }> {
+  if (!metrics) return [];
+
+  // Nowy format (z train_eval.py): baseline_persistence, ridge_delta, random_forest_delta, ...
+  const candidates = [
+    { name: "Random Forest", key: "random_forest_delta" },
+    { name: "Ridge", key: "ridge_delta" },
+    { name: "Baseline (persistence)", key: "baseline_persistence" },
+    { name: "Baseline (MA5)", key: "baseline_ma5" },
+    { name: "Baseline (momentum)", key: "baseline_momentum" },
+  ];
+
+  const out: Array<{ name: string; pack: any }> = [];
+  for (const c of candidates) {
+    const p = metrics?.[c.key];
+    if (p && (getMetric(p, "RMSE") !== undefined || getMetric(p, "MAE") !== undefined)) {
+      out.push({ name: c.name, pack: p });
+    }
+  }
+
+  // Stary/alternatywny format: {best, rf, ridge, baseline}
+  if (out.length === 0) {
+    const legacy = [
+      { name: "Baseline", pack: metrics?.baseline },
+      { name: "Ridge", pack: metrics?.ridge },
+      { name: "Random Forest", pack: metrics?.rf },
+      { name: String(metrics?.best?.name ?? "Best"), pack: metrics?.best },
+    ];
+    for (const x of legacy) {
+      if (x.pack && (getMetric(x.pack, "rmse") !== undefined || getMetric(x.pack, "RMSE") !== undefined)) {
+        out.push(x);
+      }
+    }
+  }
+
+  return out;
 }
 
 export default function DashboardTab() {
@@ -75,40 +117,40 @@ export default function DashboardTab() {
   const last = results?.lastRate ?? null;
   const metrics = results?.metrics;
 
-  // metryki top
-  const mainPack = pickMetricPack(metrics as any);
-  const rmse = toNum((mainPack as any)?.rmse);
-  const mae = toNum((mainPack as any)?.mae);
-  const mape = toNum((mainPack as any)?.mape);
+  const metricPacks = useMemo(() => extractMetricPacks(metrics as any), [metrics]);
 
-  // best model wg MAE
+  // best model wg RMSE (fallback: MAE)
   const bestPack = useMemo(() => {
-    const m = metrics as any;
-    const packs = [
-      { name: "Baseline", pack: m?.baseline ?? {} },
-      { name: "Ridge", pack: m?.ridge ?? {} },
-      { name: "Random Forest", pack: m?.rf ?? {} },
-      { name: String(m?.best?.name ?? "Best"), pack: m?.best ?? {} },
-    ].filter((x) => x.pack && (x.pack.rmse !== undefined || x.pack.mae !== undefined));
+    if (!metricPacks.length) return null;
+    let best = metricPacks[0];
+    let bestScore =
+      toNum(getMetric(best.pack, "RMSE") ?? getMetric(best.pack, "rmse")) ??
+      toNum(getMetric(best.pack, "MAE") ?? getMetric(best.pack, "mae")) ??
+      Number.POSITIVE_INFINITY;
 
-    let best = packs[0] ?? null;
-    let bestMae = toNum(best?.pack?.mae) ?? Number.POSITIVE_INFINITY;
-
-    for (const p of packs) {
-      const v = toNum(p.pack.mae);
-      const score = v ?? Number.POSITIVE_INFINITY;
-      if (score < bestMae) {
-        bestMae = score;
+    for (const p of metricPacks) {
+      const rm = toNum(getMetric(p.pack, "RMSE") ?? getMetric(p.pack, "rmse"));
+      const ma = toNum(getMetric(p.pack, "MAE") ?? getMetric(p.pack, "mae"));
+      const score = rm ?? ma ?? Number.POSITIVE_INFINITY;
+      if (score < bestScore) {
+        bestScore = score;
         best = p;
       }
     }
     return best;
-  }, [metrics]);
+  }, [metricPacks]);
 
   const bestName = bestPack?.name ?? "—";
-  const bestRMSE = toNum(bestPack?.pack?.rmse);
-  const bestMAE = toNum(bestPack?.pack?.mae);
-  const bestMAPE = toNum(bestPack?.pack?.mape);
+  const bestRMSE = toNum(getMetric(bestPack?.pack, "RMSE") ?? getMetric(bestPack?.pack, "rmse"));
+  const bestMAE = toNum(getMetric(bestPack?.pack, "MAE") ?? getMetric(bestPack?.pack, "mae"));
+  const bestMAPE = toNum(
+    getMetric(bestPack?.pack, "MAPE_pct") ?? getMetric(bestPack?.pack, "MAPE") ?? getMetric(bestPack?.pack, "mape")
+  );
+
+  // metryki top (pokazujemy "best")
+  const rmse = bestRMSE;
+  const mae = bestMAE;
+  const mape = bestMAPE;
 
   // wykres historii
   const historicalData = useMemo(
