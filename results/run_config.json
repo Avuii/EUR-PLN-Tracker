@@ -1,0 +1,54 @@
+{
+  "pair": "EUR/PLN",
+  "dataset_path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\data\\eur_a.csv",
+  "date_start": "2021-02-08",
+  "date_end": "2026-02-11",
+  "target": "delta (t+1 - t), reconstructed to level(t+1)",
+  "features": [
+    "value",
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "lag_5",
+    "lag_10",
+    "lag_20",
+    "logret_1",
+    "roll_mean_5",
+    "roll_mean_10",
+    "roll_std_5",
+    "roll_std_10",
+    "vol_10",
+    "dow"
+  ],
+  "feature_desc": "lags=[1, 2, 3, 5, 10, 20], rolling mean/std, vol_10, day-of-week",
+  "split": {
+    "train": {
+      "start": "2021-03-08",
+      "end": "2024-07-19"
+    },
+    "val": {
+      "start": "2024-07-22",
+      "end": "2025-01-28"
+    },
+    "test": {
+      "start": "2025-01-29",
+      "end": "2026-02-10"
+    }
+  },
+  "sizes": {
+    "n_train": 853,
+    "n_val": 130,
+    "n_test": 260
+  },
+  "horizons_business_days": {
+    "next7": 7,
+    "next30": 22,
+    "next90": 65,
+    "next180": 130,
+    "next365": 260
+  },
+  "tuning_enabled": true,
+  "best_model_by_val_mae": "ridge_delta",
+  "zoom_window_days": 90,
+  "seed": 0
+}

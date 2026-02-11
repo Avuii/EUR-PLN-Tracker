@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import argparse
+import logging
 from datetime import date, timedelta
 from pathlib import Path
+from typing import List, Tuple
 
 import pandas as pd
 import requests
@@ -10,114 +13,164 @@ TABLE = "A"
 CURRENCY = "EUR"
 BASE = "https://api.nbp.pl/api/exchangerates/rates"
 FMT = "json"
-MAX_DAYS_PER_REQ = 360  # bezpiecznie poniżej limitu NBP (~367)
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUT = ROOT / "data" / "eur_a.csv"
+# bezpiecznie poniżej limitu NBP (~367)
+MAX_DAYS_PER_REQ = 360
+
+log = logging.getLogger("fetch")
+
+
+def setup_logging(level: str) -> None:
+    lvl = getattr(logging, level.upper(), logging.INFO)
+    logging.basicConfig(
+        level=lvl,
+        format="%(asctime)s | %(levelname)s | %(message)s",
+        datefmt="%H:%M:%S",
+        force=True,
+    )
 
 
 def _url(table: str, code: str, start: date, end: date) -> str:
     return f"{BASE}/{table}/{code}/{start.isoformat()}/{end.isoformat()}/?format={FMT}"
 
 
-def _get_last_available(table: str, code: str) -> tuple[date, float]:
-    # last/1 działa niezależnie od weekendów — zwraca ostatni dostępny kurs
-    url = f"{BASE}/{table}/{code}/last/1/?format={FMT}"
-    r = requests.get(url, timeout=30)
-    r.raise_for_status()
-    js = r.json()
-    last = js["rates"][0]
-    d = pd.to_datetime(last["effectiveDate"]).date()
-    v = float(last["mid"])
-    return d, v
+def _fetch_range(table: str, code: str, start: date, end: date) -> List[Tuple[date, float]]:
+    """Fetch daily NBP rates (Table A) for date range [start, end] in chunks."""
+    if start > end:
+        return []
+
+    out: List[Tuple[date, float]] = []
+    cur = start
+
+    while cur <= end:
+        chunk_end = min(end, cur + timedelta(days=MAX_DAYS_PER_REQ - 1))
+        url = _url(table, code, cur, chunk_end)
+        log.info(f"GET {cur.isoformat()}..{chunk_end.isoformat()}")
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        js = r.json()
+        rates = js.get("rates", [])
+        for it in rates:
+            d = date.fromisoformat(it["effectiveDate"])
+            v = float(it["mid"])
+            out.append((d, v))
+        cur = chunk_end + timedelta(days=1)
+
+    return out
 
 
-def _fetch_range(table: str, code: str, start: date, end: date) -> pd.DataFrame:
-    """
-    Pobiera zakres. Jeśli NBP zwróci 404 'Brak danych' (np. cały zakres to weekend),
-    zwraca pusty DF.
-    """
-    url = _url(table, code, start, end)
-    r = requests.get(url, timeout=60)
-    if r.status_code == 404:
+def _load_existing_daily(path: Path) -> pd.DataFrame:
+    if not path.exists():
         return pd.DataFrame(columns=["date", "value"])
-    r.raise_for_status()
-    js = r.json()
+    df = pd.read_csv(path, parse_dates=["date"])
+    df = df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+    df["value"] = df["value"].astype(float)
+    return df
+
+
+def _save_daily(path: Path, df: pd.DataFrame) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    out = df.copy()
+    out["date"] = pd.to_datetime(out["date"]).dt.date.astype(str)
+    out.to_csv(path, index=False)
+    log.info(f"Saved {path} rows={len(out)}")
+
+
+def _daily_to_hourly_derived(
+    daily_df: pd.DataFrame,
+    fill_weekends: bool,
+) -> pd.DataFrame:
+    """
+    Create hourly series derived from daily:
+    - If fill_weekends: reindex to all calendar days and forward-fill values, then expand to hours
+    - Else: expand only existing business-day rows to 24 hours each
+    Output columns: date (datetime ISO), value
+    """
+    d = daily_df.copy()
+    d["date"] = pd.to_datetime(d["date"]).dt.normalize()
+    d = d.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+
+    if fill_weekends:
+        full_days = pd.date_range(d["date"].min(), d["date"].max(), freq="D")
+        d = d.set_index("date").reindex(full_days).ffill().reset_index()
+        d = d.rename(columns={"index": "date"})
 
     rows = []
-    for it in js.get("rates", []):
-        rows.append({"date": it["effectiveDate"], "value": float(it["mid"])})
-    df = pd.DataFrame(rows)
-    if len(df) == 0:
-        return pd.DataFrame(columns=["date", "value"])
-    df["date"] = pd.to_datetime(df["date"])
-    return df
+    for dt, val in zip(d["date"], d["value"]):
+        base = pd.to_datetime(dt)
+        for h in range(24):
+            rows.append({"date": base + pd.Timedelta(hours=h), "value": float(val)})
+
+    out = pd.DataFrame(rows)
+    return out
 
 
-def fetch_range_chunked(table: str, code: str, start: date, end: date) -> pd.DataFrame:
-    out = []
-    cur = start
-    while cur <= end:
-        chunk_end = min(end, cur + timedelta(days=MAX_DAYS_PER_REQ))
-        part = _fetch_range(table, code, cur, chunk_end)
-        if len(part) > 0:
-            out.append(part)
-        cur = chunk_end + timedelta(days=1)
-    if not out:
-        return pd.DataFrame(columns=["date", "value"])
-    df = pd.concat(out, ignore_index=True)
-    df = df.sort_values("date").drop_duplicates("date").reset_index(drop=True)
-    return df
-
-
-def update_csv(out_path: Path, years: int = 5, refresh: bool = False) -> pd.DataFrame:
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    end_date, _ = _get_last_available(TABLE, CURRENCY)
-    start_date = end_date - timedelta(days=365 * years)
-
-    old = pd.DataFrame(columns=["date", "value"])
-    if out_path.exists() and not refresh:
-        old = pd.read_csv(out_path, parse_dates=["date"])
-        if len(old) > 0:
-            old = old.sort_values("date").drop_duplicates("date").reset_index(drop=True)
-            last_old = pd.to_datetime(old["date"].iloc[-1]).date()
-            # dociągamy od następnego dnia po ostatnim kursie w CSV
-            start_date = max(start_date, last_old + timedelta(days=1))
-
-    new = pd.DataFrame(columns=["date", "value"])
-    if start_date <= end_date:
-        new = fetch_range_chunked(TABLE, CURRENCY, start_date, end_date)
-
-    if len(old) == 0 and len(new) == 0:
-        raise RuntimeError("Nie udało się pobrać żadnych danych z NBP.")
-
-    # unikamy FutureWarning: concat tylko jeśli jest co łączyć
-    if len(old) == 0:
-        merged = new.copy()
-    elif len(new) == 0:
-        merged = old.copy()
-    else:
-        merged = pd.concat([old, new], ignore_index=True)
-
-    merged = merged.sort_values("date").drop_duplicates("date").reset_index(drop=True)
-    merged.to_csv(out_path, index=False)
-
-    return merged
-
-
-def main():
+def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--years", type=int, default=5)
+    ap.add_argument("--out", type=str, required=True)
+    ap.add_argument("--freq", type=str, default="daily", choices=["daily", "hourly"])
+    ap.add_argument("--hourly-provider", type=str, default="derived", choices=["derived"])
+    ap.add_argument("--fill-weekends", action="store_true")
     ap.add_argument("--refresh", action="store_true")
-    ap.add_argument("--out", type=str, default=str(DEFAULT_OUT))
+    ap.add_argument("--log-level", type=str, default="INFO")
     args = ap.parse_args()
 
+    setup_logging(args.log_level)
     out_path = Path(args.out)
-    df = update_csv(out_path, years=args.years, refresh=args.refresh)
-    last_date = pd.to_datetime(df["date"].iloc[-1]).date()
-    print(f"DONE -> {out_path} (rows={len(df)}), last_date={last_date}")
+
+    today = date.today()
+    start = today - timedelta(days=int(args.years * 365.25))
+    end = today
+
+    log.info(f"START fetch | freq={args.freq} years={args.years} refresh={args.refresh}")
+    log.info(f"Range approx: {start.isoformat()}..{end.isoformat()}")
+
+    # always build/refresh DAILY base first (needed for hourly derived)
+    daily_out = out_path if args.freq == "daily" else out_path.parent / "eur_a.csv"
+
+    existing = _load_existing_daily(daily_out)
+    if (not args.refresh) and len(existing) > 0:
+        last_date = pd.to_datetime(existing["date"].max()).date()
+        fetch_start = last_date + timedelta(days=1)
+        if fetch_start > end:
+            log.info("No new daily data to fetch (already up to date).")
+            daily_df = existing
+        else:
+            log.info(f"Incremental fetch from {fetch_start.isoformat()}..{end.isoformat()}")
+            new = _fetch_range(TABLE, CURRENCY, fetch_start, end)
+            new_df = pd.DataFrame(new, columns=["date", "value"])
+            daily_df = pd.concat([existing, new_df], ignore_index=True)
+            daily_df = daily_df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+    else:
+        log.info("Full fetch (refresh or empty file).")
+        rows = _fetch_range(TABLE, CURRENCY, start, end)
+        daily_df = pd.DataFrame(rows, columns=["date", "value"]).sort_values("date").reset_index(drop=True)
+
+    _save_daily(daily_out, daily_df)
+
+    if args.freq == "daily":
+        log.info("DONE fetch daily")
+        return
+
+    # hourly derived
+    if args.hourly_provider != "derived":
+        raise ValueError("Only hourly-provider=derived is supported right now.")
+
+    log.info(f"Build hourly (derived) | fill_weekends={args.fill_weekends}")
+    hourly_df = _daily_to_hourly_derived(daily_df, fill_weekends=args.fill_weekends)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out = hourly_df.copy()
+    out["date"] = pd.to_datetime(out["date"]).dt.strftime("%Y-%m-%dT%H:%M:%S")
+    out.to_csv(out_path, index=False)
+    log.info(f"Saved {out_path} rows={len(out)}")
+    log.info("DONE fetch hourly derived")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        logging.getLogger("fetch").exception("FAILED fetch")
+        raise

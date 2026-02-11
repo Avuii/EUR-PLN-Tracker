@@ -50,8 +50,8 @@ export default function ForecastTab() {
     (async () => {
       try {
         setErr("");
-        const r = await api.predictionsTest(0); // 0 => wszystko (backend sam ewentualnie ograniczy)
-        setPred(r.rows);
+        const r = await api.predictionsTest(0);
+        setPred(r.rows as any);
       } catch (e: any) {
         setErr(String(e?.message ?? e));
       }
@@ -59,6 +59,15 @@ export default function ForecastTab() {
   }, []);
 
   const zoom90 = useMemo(() => pred.slice(Math.max(0, pred.length - 90)), [pred]);
+
+  const yDomainFull = useMemo(
+    () => yDomainFromData(pred, ["true", "baseline", "ridge", "rf"], 0.06, 0.02),
+    [pred]
+  );
+  const yDomainZoom = useMemo(
+    () => yDomainFromData(zoom90, ["true", "baseline", "ridge", "rf"], 0.06, 0.02),
+    [zoom90]
+  );
 
   const last = pred.length ? pred[pred.length - 1] : null;
 
@@ -70,7 +79,6 @@ export default function ForecastTab() {
         </Card>
       ) : null}
 
-      {/* Full Test Set Predictions */}
       <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
         <h3 className="mb-4">Predykcje na zbiorze testowym (pełny)</h3>
 
@@ -99,6 +107,7 @@ export default function ForecastTab() {
               stroke="rgba(255,255,255,0.2)"
               tick={{ fill: "#9ca3af", fontSize: 11 }}
               tickLine={false}
+              domain={yDomainFull}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line type="monotone" dataKey="true" stroke="#3b82f6" strokeWidth={2} dot={false} name="Rzeczywiste (jutro)" />
@@ -109,7 +118,6 @@ export default function ForecastTab() {
         </ResponsiveContainer>
       </Card>
 
-      {/* 90-Day Zoom */}
       <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
         <h3 className="mb-4">Predykcje — zoom ostatnie 90 dni</h3>
 
@@ -128,6 +136,7 @@ export default function ForecastTab() {
               stroke="rgba(255,255,255,0.2)"
               tick={{ fill: "#9ca3af", fontSize: 11 }}
               tickLine={false}
+              domain={yDomainZoom}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line type="monotone" dataKey="true" stroke="#3b82f6" strokeWidth={2} dot={false} name="Rzeczywiste (jutro)" />

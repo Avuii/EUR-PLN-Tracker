@@ -2,8 +2,9 @@
 import DashboardTab from "./components/DashboardTab";
 import DataTab from "./components/DataTab";
 import ForecastTab from "./components/ForecastTab";
-import ModelErrorsTab from "./components/ModelErrorsTab";
 import ChartsTab from "./components/ChartsTab";
+import ModelErrorsTab from "./components/ModelErrorsTab";
+import ModelsTab from "./components/ModelsTab";
 import LogsTab from "./components/LogsTab";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -21,8 +22,7 @@ export default function App() {
 
       {/* TABS */}
       <div className="px-6 pb-10">
-        <Tabs defaultValue="dashboard" className="w-full">
-          {/* TOP NAV (rounded/pill) */}
+        <Tabs defaultValue="summary" className="w-full">
           <TabsList
             className="
               w-full justify-start gap-1
@@ -32,11 +32,12 @@ export default function App() {
             "
           >
             {[
-              { v: "dashboard", t: "Panel główny" },
+              { v: "summary", t: "Podsumowanie" },
               { v: "data", t: "Dane" },
-              { v: "forecast", t: "Predykcje" },
+              { v: "forecast", t: "Prognozy" },
+              { v: "eval", t: "Ewaluacja" },
               { v: "errors", t: "Analiza błędów" },
-              { v: "charts", t: "Wykresy" },
+              { v: "models", t: "Modele" },
               { v: "logs", t: "Logi" },
             ].map((x) => (
               <TabsTrigger
@@ -59,26 +60,24 @@ export default function App() {
           </TabsList>
 
           <div className="mt-6">
-            <TabsContent value="dashboard">
+            <TabsContent value="summary">
               <DashboardTab />
             </TabsContent>
-
             <TabsContent value="data">
               <DataTab />
             </TabsContent>
-
             <TabsContent value="forecast">
               <ForecastTab />
             </TabsContent>
-
+            <TabsContent value="eval">
+              <ChartsTab />
+            </TabsContent>
             <TabsContent value="errors">
               <ModelErrorsTab />
             </TabsContent>
-
-            <TabsContent value="charts">
-              <ChartsTab />
+            <TabsContent value="models">
+              <ModelsTab />
             </TabsContent>
-
             <TabsContent value="logs">
               <LogsTab />
             </TabsContent>
