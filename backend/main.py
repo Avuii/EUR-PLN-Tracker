@@ -8,7 +8,7 @@ import threading
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -33,8 +33,9 @@ PROJECT_ROOT = _find_project_root(THIS_DIR)
 DATA_DIR = PROJECT_ROOT / "data"
 RESULTS_DIR = PROJECT_ROOT / "results"
 
-FETCH_PY = PROJECT_ROOT / "fetch_nbp.py"
-TRAIN_PY = PROJECT_ROOT / "train_eval.py"
+# ważne: skrypty są w folderze backend/
+FETCH_PY = THIS_DIR / "fetch_nbp.py"
+TRAIN_PY = THIS_DIR / "train_eval.py"
 
 DATA_CSV_DAILY = DATA_DIR / "eur_a.csv"
 DATA_CSV_HOURLY = DATA_DIR / "eur_a_hourly.csv"
@@ -103,11 +104,12 @@ app = FastAPI(title="EUR/PLN Tracker API", version="1.3")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # =========================
 # Logging helpers
@@ -160,6 +162,24 @@ def _run(cmd: list[str]) -> str:
 
 
 # =========================
+# JSON-safe helpers
+# =========================
+def _json_safe(obj: Any):
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+
+    try:
+        if pd.isna(obj):
+            return None
+    except Exception:
+        pass
+
+    return obj
+
+
+# =========================
 # Data helpers
 # =========================
 def _data_csv_for_freq(freq: str) -> Path:
@@ -194,7 +214,8 @@ def _read_json(path: Path) -> Optional[dict]:
     if not path.exists():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return _json_safe(data)
     except Exception:
         return None
 
@@ -216,7 +237,8 @@ def _read_forecast_csv(filename: str) -> list[dict]:
     if not p.exists():
         return []
     df = pd.read_csv(p)
-    return df.to_dict(orient="records")
+    df = df.astype(object).where(pd.notna(df), None)
+    return _json_safe(df.to_dict(orient="records"))
 
 
 # =========================
@@ -255,7 +277,13 @@ def api_fetch(req: FetchReq):
 
         logs = _run(cmd)
         _log("DONE /api/fetch OK")
-        return {"ok": True, "logs": logs, "lastRate": _last_rate(), "updatedAt": datetime.utcnow().isoformat()}
+
+        return _json_safe({
+            "ok": True,
+            "logs": logs,
+            "lastRate": _last_rate(),
+            "updatedAt": datetime.utcnow().isoformat(),
+        })
 
     except Exception as e:
         RUN_STATE["error"] = str(e)
@@ -272,6 +300,9 @@ def api_train(req: TrainReq):
     _log(f"START /api/train payload={req.model_dump()}")
 
     try:
+        if not TRAIN_PY.exists():
+            raise HTTPException(status_code=500, detail=f"Missing train script: {TRAIN_PY}")
+
         RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
         data_csv = _data_csv_for_freq(req.dataFreq)
@@ -303,7 +334,7 @@ def api_train(req: TrainReq):
         logs = _run(cmd)
         _log("DONE /api/train OK")
 
-        return {
+        return _json_safe({
             "ok": True,
             "logs": logs,
             "lastRate": _last_rate(),
@@ -318,7 +349,7 @@ def api_train(req: TrainReq):
             "forecast1m": _read_forecast_csv("forecast_next1m.csv"),
             "forecast12m": _read_forecast_csv("forecast_next12m.csv"),
             "updatedAt": datetime.utcnow().isoformat(),
-        }
+        })
 
     except Exception as e:
         RUN_STATE["error"] = str(e)
@@ -335,6 +366,11 @@ def api_run(req: RunReq):
     _log(f"START /api/run payload={req.model_dump()}")
 
     try:
+        if not FETCH_PY.exists():
+            raise HTTPException(status_code=500, detail=f"Missing fetch script: {FETCH_PY}")
+        if not TRAIN_PY.exists():
+            raise HTTPException(status_code=500, detail=f"Missing train script: {TRAIN_PY}")
+
         _log("STAGE fetch")
         out_csv = _data_csv_for_freq(req.freq)
         cmd_fetch = [
@@ -386,7 +422,7 @@ def api_run(req: RunReq):
         logs = _read_log_text()
         _log("DONE /api/run OK")
 
-        return {
+        return _json_safe({
             "ok": True,
             "logs": logs,
             "lastRate": _last_rate(),
@@ -401,7 +437,7 @@ def api_run(req: RunReq):
             "forecast1m": _read_forecast_csv("forecast_next1m.csv"),
             "forecast12m": _read_forecast_csv("forecast_next12m.csv"),
             "updatedAt": datetime.utcnow().isoformat(),
-        }
+        })
 
     except Exception as e:
         RUN_STATE["error"] = str(e)
@@ -413,7 +449,7 @@ def api_run(req: RunReq):
 
 @app.get("/api/results")
 def api_results():
-    return {
+    return _json_safe({
         "lastRate": _last_rate(),
         "runConfig": _read_run_config(),
         "metrics": _read_metrics(),
@@ -423,8 +459,10 @@ def api_results():
         "forecast90": _read_forecast_csv("forecast_next90.csv"),
         "forecast180": _read_forecast_csv("forecast_next180.csv"),
         "forecast365": _read_forecast_csv("forecast_next365.csv"),
+        "forecast1m": _read_forecast_csv("forecast_next1m.csv"),
+        "forecast12m": _read_forecast_csv("forecast_next12m.csv"),
         "updatedAt": datetime.utcnow().isoformat(),
-    }
+    })
 
 
 @app.get("/api/series")
@@ -434,7 +472,12 @@ def api_series(days: int = 365, freq: str = "daily"):
         return {"series": []}
     df = pd.read_csv(csv, parse_dates=["date"]).sort_values("date")
     df = df.tail(days) if days > 0 else df
-    return {"series": [{"date": pd.to_datetime(d).isoformat(), "value": float(v)} for d, v in zip(df["date"], df["value"])]}
+    return {
+        "series": [
+            {"date": pd.to_datetime(d).isoformat(), "value": float(v)}
+            for d, v in zip(df["date"], df["value"])
+        ]
+    }
 
 
 @app.get("/api/data")
@@ -443,7 +486,12 @@ def api_data(limit: int = 500, freq: str = "daily"):
     if not csv.exists():
         return {"rows": []}
     df = pd.read_csv(csv, parse_dates=["date"]).sort_values("date").tail(limit)
-    return {"rows": [{"date": pd.to_datetime(d).isoformat(), "value": float(v)} for d, v in zip(df["date"], df["value"])]}
+    return {
+        "rows": [
+            {"date": pd.to_datetime(d).isoformat(), "value": float(v)}
+            for d, v in zip(df["date"], df["value"])
+        ]
+    }
 
 
 @app.get("/api/export/data.xlsx")
@@ -499,4 +547,8 @@ def api_logs(offset: int = 0):
     if offset > len(txt):
         offset = 0
     chunk = txt[offset:]
-    return {"text": chunk, "nextOffset": offset + len(chunk), "state": RUN_STATE}
+    return _json_safe({
+        "text": chunk,
+        "nextOffset": offset + len(chunk),
+        "state": RUN_STATE,
+    })

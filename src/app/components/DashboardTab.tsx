@@ -1,5 +1,5 @@
 // src/components/DashboardTab.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import {
@@ -12,12 +12,36 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { api, ResultsResponse, RunParams } from "../lib/api";
+import { api, ResultsResponse } from "../lib/api";
 import { yDomainFromData } from "../lib/chartDomain";
 
 type MetricPack = { MAE: number; RMSE: number; MAPE_pct: number };
 
+type RunParams = {
+  years: number;
+  refresh: boolean;
+  noTuning: boolean;
+  testSizeSamples: number;
+  zoomWindowDays: number;
+  forecastDays7: number;
+  forecastDays1m: number;
+  forecastDays12m: number;
+};
+
+type LogResponseLike = {
+  text?: string;
+  nextOffset?: number;
+  state?: {
+    running?: boolean;
+    stage?: "fetch" | "train" | null;
+    error?: string | null;
+    startedAt?: string | null;
+    finishedAt?: string | null;
+  };
+};
+
 function toNum(v: unknown): number | null {
+  if (v === null || v === undefined) return null;
   const n = typeof v === "number" ? v : Number(String(v).replace("%", "").trim());
   return Number.isFinite(n) ? n : null;
 }
@@ -25,10 +49,11 @@ function toNum(v: unknown): number | null {
 function normalizeMetricPack(v: any): MetricPack | null {
   if (!v || typeof v !== "object") return null;
 
-  // obsłuż różne keye: MAE/mae itd.
-  const mae = toNum(v.MAE ?? v.mae);
-  const rmse = toNum(v.RMSE ?? v.rmse);
-  const mape = toNum(v.MAPE_pct ?? v.mape_pct ?? v.MAPE ?? v.mape);
+  const root = v?.test ?? v?.val ?? v;
+
+  const mae = toNum(root?.MAE ?? root?.mae);
+  const rmse = toNum(root?.RMSE ?? root?.rmse);
+  const mape = toNum(root?.MAPE_pct ?? root?.mape_pct ?? root?.MAPE ?? root?.mape);
 
   if (mae === null || rmse === null || mape === null) return null;
   return { MAE: mae, RMSE: rmse, MAPE_pct: mape };
@@ -36,14 +61,19 @@ function normalizeMetricPack(v: any): MetricPack | null {
 
 function prettyModelName(key: string) {
   const k = String(key).toLowerCase();
+
   if (k.includes("baseline")) return "Baseline";
+  if (k.includes("ma5")) return "MA(5)";
+  if (k.includes("momentum")) return "Momentum";
   if (k.includes("ridge")) return "Ridge";
-  if (k.includes("rf") || k.includes("randomforest")) return "RandomForest";
+  if (k.includes("rf") || k.includes("random_forest") || k.includes("randomforest")) return "RandomForest";
+  if (k.includes("extra")) return "ExtraTrees";
+  if (k.includes("hgb") || k.includes("hist_gb")) return "HistGB";
+
   return key;
 }
 
 function pickPrimaryHorizon(metrics: any): { h: number | null; node: any } {
-  // 1) najczęstsze: metrics.by_horizon["7"] = { Baseline:{...}, Ridge:{...}, ... }
   const byH = metrics?.by_horizon ?? metrics?.byHorizon;
   if (byH && typeof byH === "object") {
     const keys = Object.keys(byH);
@@ -53,13 +83,11 @@ function pickPrimaryHorizon(metrics: any): { h: number | null; node: any } {
         .filter((x) => Number.isFinite(x.n))
         .sort((a, b) => a.n - b.n);
 
-      // preferuj H=7 jeśli istnieje, inaczej najmniejszy
       const preferred = nums.find((x) => x.n === 7) ?? nums[0];
       if (preferred) return { h: preferred.n, node: byH[preferred.k] };
     }
   }
 
-  // 2) fallback: czasem w metrics.test.by_horizon
   const testByH = metrics?.test?.by_horizon ?? metrics?.test?.byHorizon;
   if (testByH && typeof testByH === "object") {
     const keys = Object.keys(testByH);
@@ -72,7 +100,6 @@ function pickPrimaryHorizon(metrics: any): { h: number | null; node: any } {
     if (preferred) return { h: preferred.n, node: testByH[preferred.k] };
   }
 
-  // 3) stary format: metryki są na top-level
   return { h: null, node: metrics };
 }
 
@@ -80,21 +107,19 @@ function extractModelPacks(metrics: any): Array<{ key: string; pack: MetricPack 
   if (!metrics || typeof metrics !== "object") return [];
 
   const { node } = pickPrimaryHorizon(metrics);
-
   const out: Array<{ key: string; pack: MetricPack }> = [];
 
-  // czasem node to np. { models: { Baseline:{...}, ... } }
   const candidateRoots: any[] = [node, node?.models, node?.model_metrics, node?.metrics].filter(Boolean);
 
   for (const root of candidateRoots) {
     if (!root || typeof root !== "object") continue;
+
     for (const [k, v] of Object.entries(root)) {
       const pack = normalizeMetricPack(v);
       if (pack) out.push({ key: String(k), pack });
     }
   }
 
-  // jeśli dalej pusto, spróbuj jeszcze raz po całym metrics (stare/niestandard)
   if (!out.length) {
     for (const [k, v] of Object.entries(metrics)) {
       const pack = normalizeMetricPack(v);
@@ -102,7 +127,6 @@ function extractModelPacks(metrics: any): Array<{ key: string; pack: MetricPack 
     }
   }
 
-  // dedupe po key
   const seen = new Set<string>();
   return out.filter((x) => (seen.has(x.key) ? false : (seen.add(x.key), true)));
 }
@@ -111,6 +135,7 @@ function fmt4(x: number | null | undefined) {
   if (x === null || x === undefined || Number.isNaN(x)) return "—";
   return x.toFixed(4).replace(".", ",");
 }
+
 function fmt2(x: number | null | undefined) {
   if (x === null || x === undefined || Number.isNaN(x)) return "—";
   return x.toFixed(2).replace(".", ",");
@@ -118,7 +143,9 @@ function fmt2(x: number | null | undefined) {
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (!active || !payload?.length) return null;
+
   const d = payload[0]?.payload?.date ?? "";
+
   return (
     <div className="bg-[#2a2f4a] border border-gray-700 rounded p-3 text-xs">
       <div className="mb-2">{d}</div>
@@ -132,11 +159,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export default function DashboardTab() {
- const [results, setResults] = useState<ResultsResponse | null>(null);
+  const [results, setResults] = useState<ResultsResponse | null>(null);
   const [series, setSeries] = useState<Array<{ date: string; value: number }>>([]);
   const [logs, setLogs] = useState<string>("");
   const [isRunning, setIsRunning] = useState(false);
   const [runErr, setRunErr] = useState<string>("");
+  const [runStage, setRunStage] = useState<string>("");
 
   const [params, setParams] = useState<RunParams>({
     years: 5,
@@ -149,18 +177,39 @@ export default function DashboardTab() {
     forecastDays12m: 260,
   });
 
-  useEffect(() => {
-    (async () => {
-      const r = await api.results().catch(() => null);
-      if (r) setResults(r);
-      const s = await api.series(3650).catch(() => ({ series: [] }));
-      setSeries(s.series ?? []);
-      const lg = await api.logs().catch(() => ({ logs: "" }));
-      setLogs(Array.isArray(lg.logs) ? lg.logs.join("\n") : lg.logs ?? "");
-    })();
+  const loadDashboard = useCallback(async () => {
+    const [r, s, lg] = await Promise.all([
+      api.results().catch(() => null),
+      api.series(3650).catch(() => ({ series: [] })),
+      api.logs().catch(() => ({ text: "", nextOffset: 0, state: { running: false, stage: null } })),
+    ]);
+
+    if (r) setResults(r);
+    setSeries(s.series ?? []);
+    setLogs(lg.text ?? "");
+    setRunStage(lg.state?.stage ? String(lg.state.stage) : "");
   }, []);
 
-  // --- KPI: BEST metrics (działa dla multi-horyzont i starego formatu) ---
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const id = window.setInterval(async () => {
+      try {
+        const lg: LogResponseLike = await api.logs();
+        setLogs(lg.text ?? "");
+        setRunStage(lg.state?.stage ? String(lg.state.stage) : "");
+      } catch {
+        // ignore polling errors
+      }
+    }, 1200);
+
+    return () => window.clearInterval(id);
+  }, [isRunning]);
+
   const bestPack = useMemo(() => {
     const m = (results as any)?.metrics;
     const packs = extractModelPacks(m);
@@ -168,10 +217,7 @@ export default function DashboardTab() {
     if (!packs.length) return null;
 
     const bestBy = (field: keyof MetricPack) =>
-      packs.reduce(
-        (acc, cur) => (cur.pack[field] < acc.pack[field] ? cur : acc),
-        packs[0]
-      );
+      packs.reduce((acc, cur) => (cur.pack[field] < acc.pack[field] ? cur : acc), packs[0]);
 
     const bestMae = bestBy("MAE");
     const bestRmse = bestBy("RMSE");
@@ -182,46 +228,75 @@ export default function DashboardTab() {
       MAE: bestMae.pack.MAE,
       RMSE: bestRmse.pack.RMSE,
       MAPE_pct: bestMape.pack.MAPE_pct,
-      // info: jaki horyzont użyty
       horizon: pickPrimaryHorizon(m).h,
     };
   }, [results]);
 
-  const lastRate = results?.lastRate;
+  const lastRate = useMemo(() => {
+    if (series?.length) return series[series.length - 1];
+    const lr = results?.lastRate;
+    return lr ? { date: lr.date, value: lr.value } : null;
+  }, [series, results]);
+
   const lastValue = lastRate?.value ?? null;
-  
+
   const dailyPct = useMemo(() => {
-    if (!series || series.length < 2) return null;
-    const today = series[series.length - 1]?.value;
-    const yesterday = series[series.length - 2]?.value;
-    if (today === undefined || yesterday === undefined) return null;
-    return ((today - yesterday) / yesterday) * 100;
-  }, [series]);
-  
+    if (series && series.length >= 2) {
+      const today = series[series.length - 1]?.value;
+      const yesterday = series[series.length - 2]?.value;
+      if (today !== undefined && yesterday !== undefined && yesterday !== 0) {
+        return ((today - yesterday) / yesterday) * 100;
+      }
+    }
+
+    const v = (results as any)?.lastRate?.deltaPct;
+    return toNum(v);
+  }, [series, results]);
+
   const dailyAbs = useMemo(() => {
-    if (!series || series.length < 2) return null;
-    const today = series[series.length - 1]?.value;
-    const yesterday = series[series.length - 2]?.value;
-    if (today === undefined || yesterday === undefined) return null;
-    return today - yesterday;
-  }, [series]);
+    if (series && series.length >= 2) {
+      const today = series[series.length - 1]?.value;
+      const yesterday = series[series.length - 2]?.value;
+      if (today !== undefined && yesterday !== undefined) {
+        return today - yesterday;
+      }
+    }
+
+    const v = (results as any)?.lastRate?.delta;
+    return toNum(v);
+  }, [series, results]);
 
   const yDomainSeries = useMemo(() => yDomainFromData(series, ["value"], 0.08, 0.02), [series]);
 
   async function handleRun() {
     setIsRunning(true);
     setRunErr("");
+    setRunStage("fetch");
+
     try {
-      const r = await api.run(params);
-      if (r?.logs) setLogs(Array.isArray(r.logs) ? r.logs.join("\n") : r.logs);
-      const res = await api.results();
-      setResults(res);
-      const s = await api.series(3650);
-      setSeries(s.series ?? []);
-      const lg = await api.logs();
-      setLogs(Array.isArray(lg.logs) ? lg.logs.join("\n") : lg.logs ?? "");
+      await api.run({
+        years: params.years,
+        refresh: params.refresh,
+        noTuning: params.noTuning,
+        testSizeSamples: params.testSizeSamples,
+        zoomWindowDays: params.zoomWindowDays,
+        forecastDays7: params.forecastDays7,
+        forecastDays1m: params.forecastDays1m,
+        forecastDays12m: params.forecastDays12m,
+      });
+
+      await loadDashboard();
+      setRunStage("");
     } catch (e: any) {
       setRunErr(String(e?.message ?? e));
+
+      try {
+        const lg: LogResponseLike = await api.logs();
+        setLogs(lg.text ?? "");
+        setRunStage(lg.state?.stage ? String(lg.state.stage) : "");
+      } catch {
+        // ignore
+      }
     } finally {
       setIsRunning(false);
     }
@@ -235,7 +310,6 @@ export default function DashboardTab() {
         </Card>
       ) : null}
 
-      {/* KPI row */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">Ostatni kurs</div>
@@ -245,7 +319,11 @@ export default function DashboardTab() {
 
         <Card className="bg-gradient-to-br from-red-500/10 to-white/[0.02] border-red-500/20 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">Zmiana dzienna</div>
-          <div className={`mt-3 text-3xl font-semibold ${dailyPct !== null && dailyPct < 0 ? "text-red-300" : "text-green-300"}`}>
+          <div
+            className={`mt-3 text-3xl font-semibold ${
+              dailyPct !== null && dailyPct < 0 ? "text-red-300" : "text-green-300"
+            }`}
+          >
             {dailyPct === null ? "—" : `${fmt2(dailyPct)}%`}
           </div>
           <div className="mt-2 text-xs text-gray-500">{dailyAbs === null ? "—" : `${fmt4(dailyAbs)} zł`}</div>
@@ -270,17 +348,18 @@ export default function DashboardTab() {
           <div className="text-xs text-gray-400 uppercase tracking-wider">
             MAPE (BEST) {bestPack?.horizon ? <span className="text-gray-500">• H={bestPack.horizon}</span> : null}
           </div>
-          <div className="mt-3 text-3xl font-semibold text-white">{bestPack ? `${fmt2(bestPack.MAPE_pct)}%` : "—"}</div>
+          <div className="mt-3 text-3xl font-semibold text-white">
+            {bestPack ? `${fmt2(bestPack.MAPE_pct)}%` : "—"}
+          </div>
         </Card>
       </div>
 
-      {/* main layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* chart */}
         <Card className="lg:col-span-2 bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white/90">EUR/PLN (historia)</h3>
           </div>
+
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -299,15 +378,12 @@ export default function DashboardTab() {
                 domain={yDomainSeries}
               />
               <Tooltip content={<CustomTooltip />} />
-              {/* Orange line */}
               <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2.2} dot={false} name="EUR/PLN" />
-              {/* opcjonalna linia "dziś" */}
               {lastRate?.date ? <ReferenceLine x={lastRate.date} stroke="rgba(59,130,246,0.35)" /> : null}
             </LineChart>
           </ResponsiveContainer>
         </Card>
 
-        {/* Run panel + logs */}
         <div className="space-y-6">
           <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
             <div className="text-white/90 mb-4">Uruchom eksperyment</div>
@@ -347,7 +423,7 @@ export default function DashboardTab() {
               onClick={handleRun}
               disabled={isRunning}
             >
-              {isRunning ? "Running..." : "Run"}
+              {isRunning ? `Running${runStage ? ` (${runStage})` : "..."}` : "Run"}
             </Button>
           </Card>
 
@@ -362,6 +438,7 @@ export default function DashboardTab() {
                 Copy
               </Button>
             </div>
+
             <pre className="text-xs text-gray-300 whitespace-pre-wrap max-h-[300px] overflow-auto">
               {logs || "—"}
             </pre>

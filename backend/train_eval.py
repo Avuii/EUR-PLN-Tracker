@@ -51,6 +51,54 @@ def setup_logging(level: str) -> None:
         force=True,
     )
 
+
+# =========================
+# JSON helpers
+# =========================
+def to_jsonable(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {str(k): to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [to_jsonable(v) for v in obj]
+
+    if isinstance(obj, Path):
+        return str(obj)
+
+    if isinstance(obj, pd.Timestamp):
+        return obj.isoformat()
+
+    if isinstance(obj, np.datetime64):
+        return pd.to_datetime(obj).isoformat()
+
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+
+    if isinstance(obj, (np.floating,)):
+        val = float(obj)
+        return val if np.isfinite(val) else None
+
+    if isinstance(obj, (np.bool_,)):
+        return bool(obj)
+
+    if isinstance(obj, float):
+        return obj if np.isfinite(obj) else None
+
+    return obj
+
+
+def ensure_dir(p: Path) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+
+
+def save_json(path: Path, obj: Any) -> None:
+    ensure_dir(path)
+    safe = to_jsonable(obj)
+    path.write_text(
+        json.dumps(safe, indent=2, ensure_ascii=False, allow_nan=False),
+        encoding="utf-8",
+    )
+
+
 # =========================
 # Feature engineering
 # =========================
@@ -93,7 +141,7 @@ def mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def smape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    denom = (np.abs(y_true) + np.abs(y_pred))
+    denom = np.abs(y_true) + np.abs(y_pred)
     denom = np.where(denom == 0, 1.0, denom)
     return float(np.mean(2.0 * np.abs(y_pred - y_true) / denom) * 100.0)
 
@@ -114,6 +162,19 @@ def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray, today: np.ndarray) -
         "smape_pct": smape(y_true, y_pred),
         "bias": float(np.mean(y_pred - y_true)),
         "dir_acc": direction_accuracy(today, y_true, y_pred),
+    }
+
+
+def legacy_metric_block(block: Dict[str, Any] | None) -> Dict[str, Any]:
+    if not block:
+        return {}
+    return {
+        "MAE": block.get("mae"),
+        "RMSE": block.get("rmse"),
+        "MAPE": block.get("mape_pct"),
+        "SMAPE": block.get("smape_pct"),
+        "BIAS": block.get("bias"),
+        "DIR_ACC": block.get("dir_acc"),
     }
 
 
@@ -154,6 +215,7 @@ def build_row_from_history(dt: pd.Timestamp, hist: List[float]) -> Dict[str, Any
     v = np.array(hist, dtype=float)
     cur = float(v[-1])
     row: Dict[str, Any] = {"date": dt, "value": cur}
+
     for k in LAGS:
         row[f"lag_{k}"] = float(v[-k]) if len(v) > k else np.nan
 
@@ -171,15 +233,6 @@ def build_row_from_history(dt: pd.Timestamp, hist: List[float]) -> Dict[str, Any
 
     row["dow"] = int(pd.to_datetime(dt).dayofweek)
     return row
-
-
-def ensure_dir(p: Path) -> None:
-    p.parent.mkdir(parents=True, exist_ok=True)
-
-
-def save_json(path: Path, obj: Any) -> None:
-    ensure_dir(path)
-    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def _baseline_preds(today: np.ndarray, lag1: np.ndarray, ma5: np.ndarray) -> Dict[str, np.ndarray]:
@@ -249,13 +302,15 @@ def walk_forward_backtest(
         pred_level = today_te + m.predict(X_te)
 
         met = compute_metrics(true_te, pred_level, today_te)
-        windows.append({
-            "window": int(w + 1),
-            "train_end_index": int(train_end),
-            "test_start_index": int(train_end),
-            "test_end_index": int(test_end),
-            **met,
-        })
+        windows.append(
+            {
+                "window": int(w + 1),
+                "train_end_index": int(train_end),
+                "test_start_index": int(train_end),
+                "test_end_index": int(test_end),
+                **met,
+            }
+        )
         cur = test_end
         if cur >= start_idx + total_len:
             break
@@ -265,8 +320,8 @@ def walk_forward_backtest(
         out["mae_avg"] = float(np.mean([w["mae"] for w in windows]))
         out["rmse_avg"] = float(np.mean([w["rmse"] for w in windows]))
     else:
-        out["mae_avg"] = float("nan")
-        out["rmse_avg"] = float("nan")
+        out["mae_avg"] = None
+        out["rmse_avg"] = None
     return out
 
 
@@ -389,7 +444,7 @@ def main() -> None:
             rs.fit(X_train, y_train)
             dt = time.perf_counter() - t1
             log.info(f"[TUNE] {name} done in {dt:.1f}s | best={rs.best_params_}")
-            return rs.best_estimator_, rs.best_params_
+            return rs.best_estimator_, to_jsonable(rs.best_params_)
 
         ridge, ridge_best = _tune(
             "ridge",
@@ -489,24 +544,26 @@ def main() -> None:
         "hist_gb_delta": today_test + hgb.predict(X_test),
     }
 
+    best_test_pred = pred_test.get(best_name, pred_test["random_forest_delta"])
+
     # =========================
-    # Save run_config.json (UI "uczciwość")
+    # Save run_config.json
     # =========================
     split_cfg = {
         "train": {
             "start": str(pd.to_datetime(dates_all[train_sl.start]).date()),
-            "end": str(pd.to_datetime(dates_all[train_sl.stop - 1]).date())
+            "end": str(pd.to_datetime(dates_all[train_sl.stop - 1]).date()),
         },
         "val": None,
         "test": {
             "start": str(pd.to_datetime(dates_all[test_sl.start]).date()),
-            "end": str(pd.to_datetime(dates_all[test_sl.stop - 1]).date())
+            "end": str(pd.to_datetime(dates_all[test_sl.stop - 1]).date()),
         },
     }
     if val_sl.stop > val_sl.start:
         split_cfg["val"] = {
             "start": str(pd.to_datetime(dates_all[val_sl.start]).date()),
-            "end": str(pd.to_datetime(dates_all[val_sl.stop - 1]).date())
+            "end": str(pd.to_datetime(dates_all[val_sl.stop - 1]).date()),
         }
 
     run_config = {
@@ -537,7 +594,18 @@ def main() -> None:
     # =========================
     metrics: Dict[str, Any] = {
         "best_model": {"name": best_name, "criterion": "val.mae" if (val_sl.stop > val_sl.start) else "default"},
-        "params": {"ridge_best": ridge_best, "rf_best": rf_best, "et_best": et_best, "hgb_best": hgb_best},
+        "best_model_name": best_name,
+        "params": {
+            "ridge_best": ridge_best,
+            "rf_best": rf_best,
+            "et_best": et_best,
+            "hgb_best": hgb_best,
+        },
+        # aliasy pod prostszy frontend
+        "ridge_best_params": ridge_best,
+        "rf_best_params": rf_best,
+        "et_best_params": et_best,
+        "hgb_best_params": hgb_best,
         "models": {},
     }
 
@@ -552,8 +620,10 @@ def main() -> None:
 
     metrics["models"].setdefault("baseline_persistence", {})
     metrics["models"]["baseline_persistence"]["test"] = compute_metrics(true_test, base_test["baseline_persistence"], today_test)
+
     metrics["models"].setdefault("baseline_ma5", {})
     metrics["models"]["baseline_ma5"]["test"] = compute_metrics(true_test, base_test["baseline_ma5"], today_test)
+
     metrics["models"].setdefault("baseline_momentum", {})
     metrics["models"]["baseline_momentum"]["test"] = compute_metrics(true_test, base_test["baseline_momentum"], today_test)
 
@@ -561,24 +631,37 @@ def main() -> None:
         metrics["models"].setdefault(name, {})
         metrics["models"][name]["test"] = compute_metrics(true_test, yhat, today_test)
 
+    # aliasy pod frontend
+    metrics["baseline"] = legacy_metric_block(metrics["models"]["baseline_persistence"].get("test"))
+    metrics["ma5"] = legacy_metric_block(metrics["models"]["baseline_ma5"].get("test"))
+    metrics["momentum"] = legacy_metric_block(metrics["models"]["baseline_momentum"].get("test"))
+    metrics["ridge"] = legacy_metric_block(metrics["models"]["ridge_delta"].get("test"))
+    metrics["rf"] = legacy_metric_block(metrics["models"]["random_forest_delta"].get("test"))
+    metrics["extra"] = legacy_metric_block(metrics["models"]["extra_trees_delta"].get("test"))
+    metrics["hgb"] = legacy_metric_block(metrics["models"]["hist_gb_delta"].get("test"))
+
     save_json(OUT_DIR / "metrics.json", metrics)
     log.info("Saved results/metrics.json")
 
     # =========================
     # predictions_test.csv
     # =========================
-    pred_df = pd.DataFrame({
-        "date": pd.to_datetime(dates_all[test_sl]),
-        "today_value": today_test,
-        "true_tomorrow": true_test,
-        "pred_baseline": base_test["baseline_persistence"],
-        "pred_ma5": base_test["baseline_ma5"],
-        "pred_momentum": base_test["baseline_momentum"],
-        "pred_ridge": pred_test["ridge_delta"],
-        "pred_rf": pred_test["random_forest_delta"],
-        "pred_extra": pred_test["extra_trees_delta"],
-        "pred_hgb": pred_test["hist_gb_delta"],
-    })
+    pred_df = pd.DataFrame(
+        {
+            "date": pd.to_datetime(dates_all[test_sl]),
+            "today_value": today_test,
+            "true_tomorrow": true_test,
+            "best_model": best_name,
+            "pred_best": best_test_pred,
+            "pred_baseline": base_test["baseline_persistence"],
+            "pred_ma5": base_test["baseline_ma5"],
+            "pred_momentum": base_test["baseline_momentum"],
+            "pred_ridge": pred_test["ridge_delta"],
+            "pred_rf": pred_test["random_forest_delta"],
+            "pred_extra": pred_test["extra_trees_delta"],
+            "pred_hgb": pred_test["hist_gb_delta"],
+        }
+    )
     for col in [c for c in pred_df.columns if c.startswith("pred_")]:
         pred_df[f"err_{col}"] = pred_df[col] - pred_df["true_tomorrow"]
         pred_df[f"abs_err_{col}"] = np.abs(pred_df[f"err_{col}"])
@@ -613,9 +696,16 @@ def main() -> None:
         hist_et = history_values.copy()
         hist_hgb = history_values.copy()
 
-        best_model_obj = {"ridge_delta": ridge, "random_forest_delta": rf, "extra_trees_delta": et, "hist_gb_delta": hgb}.get(best_name, rf)
+        best_model_obj = {
+            "ridge_delta": ridge,
+            "random_forest_delta": rf,
+            "extra_trees_delta": et,
+            "hist_gb_delta": hgb,
+        }.get(best_name, rf)
 
         rows = []
+        baseline_value = float(history_values[-1])
+
         for dt in future_dates:
             row_r = build_row_from_history(dt, hist_ridge)
             row_rf = build_row_from_history(dt, hist_rf)
@@ -643,6 +733,13 @@ def main() -> None:
             next_hgb = float(hist_hgb[-1] + d_hgb)
             hist_hgb.append(next_hgb)
 
+            best_value = {
+                "ridge_delta": next_r,
+                "random_forest_delta": next_rf,
+                "extra_trees_delta": next_et,
+                "hist_gb_delta": next_hgb,
+            }.get(best_name, next_rf)
+
             p80_low = p80_high = p95_low = p95_high = None
             if hasattr(best_model_obj, "estimators_"):
                 if best_name == "random_forest_delta":
@@ -660,19 +757,26 @@ def main() -> None:
                     p95_low = float(today_here + q["p025"][0])
                     p95_high = float(today_here + q["p975"][0])
 
-            rows.append({
-                "date": dt.date().isoformat(),
-                "baseline": float(history_values[-1]),
-                "ridge": next_r,
-                "rf": next_rf,
-                "extra": next_et,
-                "hgb": next_hgb,
-                "best_model": best_name,
-                "best_p80_low": p80_low,
-                "best_p80_high": p80_high,
-                "best_p95_low": p95_low,
-                "best_p95_high": p95_high,
-            })
+            rows.append(
+                {
+                    "date": dt.date().isoformat(),
+                    "baseline": baseline_value,
+                    "ridge": next_r,
+                    "rf": next_rf,
+                    "extra": next_et,
+                    "hgb": next_hgb,
+                    "best_model": best_name,
+                    "best_value": best_value,
+                    "p80_low": p80_low,
+                    "p80_high": p80_high,
+                    "p95_low": p95_low,
+                    "p95_high": p95_high,
+                    "best_p80_low": p80_low,
+                    "best_p80_high": p80_high,
+                    "best_p95_low": p95_low,
+                    "best_p95_high": p95_high,
+                }
+            )
 
         df_out = pd.DataFrame(rows)
         df_out.to_csv(out_csv, index=False)
