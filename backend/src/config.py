@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CONFIG_PATH = PROJECT_ROOT / "configs" / "config.json"
 
 
 DEFAULT_CONFIG: dict[str, Any] = {
@@ -130,7 +131,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "fair_refit_on_last_W": True,
         },
 
-        # optional packages — frontend/backend może sprawdzać availability
+        # optional packages — można sprawdzać availability
         "optional_backends": {
             "xgboost_enabled": False,
             "lightgbm_enabled": False,
@@ -189,8 +190,12 @@ def _normalize_special_values(cfg: dict[str, Any]) -> dict[str, Any]:
     if "date_range" not in out:
         out["date_range"] = {}
 
-    out["date_range"]["start"] = _resolve_today(out["date_range"].get("start", DEFAULT_CONFIG["date_range"]["start"]))
-    out["date_range"]["end"] = _resolve_today(out["date_range"].get("end", DEFAULT_CONFIG["date_range"]["end"]))
+    out["date_range"]["start"] = _resolve_today(
+        out["date_range"].get("start", DEFAULT_CONFIG["date_range"]["start"])
+    )
+    out["date_range"]["end"] = _resolve_today(
+        out["date_range"].get("end", DEFAULT_CONFIG["date_range"]["end"])
+    )
 
     return out
 
@@ -253,8 +258,29 @@ def validate_config(cfg: dict[str, Any]) -> None:
             raise ValueError(f"Brak output.{key} w configu")
 
 
-def load_config(path: str | Path = "configs/config.json") -> dict[str, Any]:
+def write_default_config(path: str | Path = DEFAULT_CONFIG_PATH, overwrite: bool = False) -> Path:
     path = resolve_path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    if path.exists() and not overwrite:
+        return path
+
+    path.write_text(
+        json.dumps(DEFAULT_CONFIG, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return path
+
+
+def ensure_main_config(path: str | Path = DEFAULT_CONFIG_PATH) -> Path:
+    path = resolve_path(path)
+    if not path.exists():
+        write_default_config(path, overwrite=False)
+    return path
+
+
+def load_config(path: str | Path = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
+    path = ensure_main_config(path)
     user_cfg = json.loads(path.read_text(encoding="utf-8"))
 
     cfg = _deep_merge(DEFAULT_CONFIG, user_cfg)
@@ -337,17 +363,3 @@ def model_enabled(cfg: dict[str, Any], model_name: str) -> bool:
 
 def enabled_models(cfg: dict[str, Any]) -> list[str]:
     return [str(x) for x in cfg.get("models", {}).get("enabled", [])]
-
-
-def write_default_config(path: str | Path = "configs/config.json", overwrite: bool = False) -> Path:
-    path = resolve_path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    if path.exists() and not overwrite:
-        return path
-
-    path.write_text(
-        json.dumps(DEFAULT_CONFIG, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    return path
