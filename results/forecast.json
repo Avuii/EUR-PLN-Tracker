@@ -1,9 +1,0 @@
-{
-  "next_day_forecast": {
-    "last_date": "2026-02-05",
-    "today_value": 4.2175,
-    "baseline": 4.2175,
-    "ridge_delta": 0.00037244137882388046,
-    "rf_delta": 0.00026748965678528825
-  }
-}
