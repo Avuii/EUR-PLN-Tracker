@@ -1,0 +1,73 @@
+{
+  "status": "ok",
+  "started_at": "2026-03-09 12:14:48",
+  "finished_at": "2026-03-09 12:26:25",
+  "run_dir": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448",
+  "stages": [
+    {
+      "stage": "fetch",
+      "module": "src.fetch_nbp",
+      "status": "ok",
+      "seconds": 6.118,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448"
+      ],
+      "args_used": [
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448"
+      ]
+    },
+    {
+      "stage": "build_dataset",
+      "module": "src.build_dataset",
+      "status": "ok",
+      "seconds": 2.365,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.build_dataset",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448"
+      ],
+      "args_used": [
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448"
+      ]
+    },
+    {
+      "stage": "train_eval",
+      "module": "src.train_eval",
+      "status": "ok",
+      "seconds": 688.02,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.train_eval",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448",
+        "--no-tuning"
+      ],
+      "args_used": [
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_121448",
+        "--no-tuning"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 # src/config.py
 from __future__ import annotations
+import warnings
+from pandas.errors import PerformanceWarning
 
+warnings.filterwarnings("ignore", category=PerformanceWarning)
 import copy
 import json
 from datetime import date, datetime

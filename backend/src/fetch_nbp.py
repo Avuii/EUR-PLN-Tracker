@@ -1,6 +1,9 @@
 # src/fetch_nbp.py
 from __future__ import annotations
+import warnings
+from pandas.errors import PerformanceWarning
 
+warnings.filterwarnings("ignore", category=PerformanceWarning)
 import argparse
 import logging
 from datetime import date, timedelta

@@ -1,6 +1,9 @@
 # src/build_dataset.py
 from __future__ import annotations
+import warnings
+from pandas.errors import PerformanceWarning
 
+warnings.filterwarnings("ignore", category=PerformanceWarning)
 import argparse
 import json
 import logging

@@ -42,7 +42,10 @@ try:
     from lightgbm import LGBMRegressor
 except Exception:
     LGBMRegressor = None
+import warnings
+from pandas.errors import PerformanceWarning
 
+warnings.filterwarnings("ignore", category=PerformanceWarning)
 
 # =========================
 # Logging
