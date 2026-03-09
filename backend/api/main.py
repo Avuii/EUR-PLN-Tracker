@@ -1,196 +1,180 @@
+# api/main.py
 from __future__ import annotations
 
 import json
 import mimetypes
 import subprocess
 import sys
-import threading
-from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Optional
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-# =========================
-# Paths
-# =========================
-THIS_DIR = Path(__file__).resolve().parent
+from src.config import get_data_dir, get_runs_dir, load_config, resolve_path
 
-
-def _find_project_root(start: Path) -> Path:
-    for c in [start, start.parent, start.parent.parent]:
-        if (c / "data").exists() or (c / "results").exists() or (c / "package.json").exists():
-            return c
-    return start.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-PROJECT_ROOT = _find_project_root(THIS_DIR)
-DATA_DIR = PROJECT_ROOT / "data"
-RESULTS_DIR = PROJECT_ROOT / "results"
-
-# ważne: skrypty są w folderze backend/
-FETCH_PY = THIS_DIR / "fetch_nbp.py"
-TRAIN_PY = THIS_DIR / "train_eval.py"
-
-DATA_CSV_DAILY = DATA_DIR / "eur_a.csv"
-DATA_CSV_HOURLY = DATA_DIR / "eur_a_hourly.csv"
-
-RUN_LOG = RESULTS_DIR / "run.log"
-_LOG_LOCK = threading.Lock()
-
-RUN_STATE = {
-    "running": False,
-    "stage": None,  # "fetch" | "train" | None
-    "error": None,
-    "startedAt": None,
-    "finishedAt": None,
-}
-
-# =========================
-# Request models
-# =========================
-class FetchReq(BaseModel):
-    years: int = Field(default=5, ge=1, le=30)
-    refresh: bool = False
-
-    # future-ready (NBP hourly is derived)
-    freq: str = Field(default="daily", pattern="^(daily|hourly)$")
-    hourlyProvider: str = Field(default="derived", pattern="^(derived)$")
-    fillWeekends: bool = False
-
-    logLevel: str = Field(default="INFO")
-
-
-class TrainReq(BaseModel):
-    noTuning: bool = True
-
-    testSizeSamples: int = Field(default=260, ge=50, le=5000)
-    valSizeSamples: int = Field(default=130, ge=0, le=5000)
-
-    zoomWindowDays: int = Field(default=90, ge=7, le=365)
-
-    # New horizons (business days)
-    forecastDays7: int = Field(default=7, ge=1, le=60)
-    forecastDays30: int = Field(default=22, ge=5, le=120)
-    forecastDays90: int = Field(default=65, ge=10, le=260)
-    forecastDays180: int = Field(default=130, ge=20, le=520)
-    forecastDays365: int = Field(default=260, ge=60, le=1040)
-
-    # backward compatible fields used by older UI
-    forecastDays1m: Optional[int] = Field(default=None, ge=5, le=120)
-    forecastDays12m: Optional[int] = Field(default=None, ge=60, le=1040)
-
-    backtestWindows: int = Field(default=5, ge=3, le=20)
-
-    # train on daily by default (hourly is optional future plan)
-    dataFreq: str = Field(default="daily", pattern="^(daily|hourly)$")
-
-    logLevel: str = Field(default="INFO")
-
-
-class RunReq(FetchReq, TrainReq):
-    pass
-
-
-# =========================
-# App
-# =========================
-app = FastAPI(title="EUR/PLN Tracker API", version="1.3")
+# =========================================================
+# Config + app
+# =========================================================
+cfg = load_config()
+app = FastAPI(title="EUR/PLN Tracker API", version="2.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origins=cfg.get("api", {}).get("cors_origins", [
+        "http://localhost:4000",
+        "http://127.0.0.1:4000",
+    ]),
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# =========================
-# Logging helpers
-# =========================
-def _reset_log() -> None:
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    with _LOG_LOCK:
-        RUN_LOG.write_text("", encoding="utf-8")
+# =========================================================
+# Request models
+# =========================================================
+class RunReq(BaseModel):
+    config: str = "configs/config.json"
+    skip_fetch: bool = False
+    skip_build: bool = False
+    skip_train: bool = False
+    no_tuning: bool = False
+    val_size_samples: Optional[int] = None
+    test_size_samples: Optional[int] = None
+    backtest_windows: Optional[int] = None
 
 
-def _log(line: str) -> None:
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.utcnow().strftime("%H:%M:%S")
-    with _LOG_LOCK:
-        with RUN_LOG.open("a", encoding="utf-8") as f:
-            f.write(f"{ts} | {line}\n")
+# =========================================================
+# Helpers
+# =========================================================
+def _json_load(path: Path) -> Any:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _read_log_text() -> str:
-    if not RUN_LOG.exists():
-        return ""
-    return RUN_LOG.read_text(encoding="utf-8", errors="replace")
+def _find_run_dirs() -> list[Path]:
+    runs_dir = get_runs_dir(cfg)
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    return sorted([p for p in runs_dir.iterdir() if p.is_dir()], key=lambda p: p.stat().st_mtime, reverse=True)
 
 
-def _run_stream(cmd: list[str]) -> None:
-    """Runs command, streams stdout/stderr into results/run.log."""
-    _log(f"RUN: {' '.join(cmd)}")
-
-    p = subprocess.Popen(
-        cmd,
-        cwd=str(PROJECT_ROOT),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-    )
-
-    assert p.stdout is not None
-    for line in p.stdout:
-        _log(line.rstrip("\n"))
-
-    rc = p.wait()
-    if rc != 0:
-        raise RuntimeError(f"Command failed (code={rc}): {' '.join(cmd)}")
+def _latest_run() -> Path:
+    runs = _find_run_dirs()
+    if not runs:
+        raise HTTPException(status_code=404, detail="Brak uruchomień pipeline.")
+    return runs[0]
 
 
-def _run(cmd: list[str]) -> str:
-    _run_stream(cmd)
-    return _read_log_text()
+def _resolve_run(run: str | None) -> Path:
+    if not run:
+        return _latest_run()
+
+    p = resolve_path(run)
+    if p.exists() and p.is_dir():
+        return p
+
+    # jeśli user poda tylko nazwę folderu runa
+    cand = get_runs_dir(cfg) / run
+    if cand.exists() and cand.is_dir():
+        return cand
+
+    raise HTTPException(status_code=404, detail=f"Nie znaleziono run_dir: {run}")
 
 
-# =========================
-# JSON-safe helpers
-# =========================
-def _json_safe(obj: Any):
-    if isinstance(obj, dict):
-        return {k: _json_safe(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_json_safe(v) for v in obj]
-
-    try:
-        if pd.isna(obj):
-            return None
-    except Exception:
-        pass
-
-    return obj
-
-
-# =========================
-# Data helpers
-# =========================
-def _data_csv_for_freq(freq: str) -> Path:
-    return DATA_CSV_DAILY if freq == "daily" else DATA_CSV_HOURLY
-
-
-def _last_rate() -> Optional[dict]:
-    """Last rate is always taken from DAILY."""
-    if not DATA_CSV_DAILY.exists():
+def _run_json(run_path: Path, filename: str, required: bool = True) -> Any:
+    p = run_path / filename
+    if not p.exists():
+        if required:
+            raise HTTPException(status_code=404, detail=f"Brak pliku {filename} w {run_path.name}")
         return None
-    df = pd.read_csv(DATA_CSV_DAILY, parse_dates=["date"]).sort_values("date")
+    return _json_load(p)
+
+
+def _run_csv(run_path: Path, filename: str, required: bool = True) -> pd.DataFrame:
+    p = run_path / filename
+    if not p.exists():
+        if required:
+            raise HTTPException(status_code=404, detail=f"Brak pliku {filename} w {run_path.name}")
+        return pd.DataFrame()
+    return pd.read_csv(p)
+
+
+def _pair_label() -> str:
+    return f"{cfg['currency']}/{cfg.get('target_quote', 'PLN')}"
+
+
+def _read_pipeline_log(run_path: Path) -> str:
+    candidates = [
+        run_path / "pipeline.log",
+        run_path / cfg.get("output", {}).get("log_name", "app.log"),
+        run_path / "app.log",
+    ]
+    for p in candidates:
+        if p.exists():
+            return p.read_text(encoding="utf-8", errors="replace")
+    return ""
+
+
+def _read_source_csv_for_latest(run_path: Path) -> pd.DataFrame:
+    manifest = run_path / "datasets_manifest.json"
+    source_csv: Optional[Path] = None
+
+    if manifest.exists():
+        try:
+            js = _json_load(manifest)
+            src = js.get("source_csv")
+            if src:
+                source_csv = resolve_path(src)
+        except Exception:
+            source_csv = None
+
+    if source_csv is None or not source_csv.exists():
+        data_dir = get_data_dir(cfg)
+        patterns = [
+            f"raw_{str(cfg['currency']).lower()}{str(cfg.get('target_quote', 'PLN')).lower()}_*.csv",
+            f"raw_{str(cfg['currency']).lower()}{str(cfg.get('target_quote', 'PLN')).lower()}.csv",
+            f"{str(cfg['currency']).lower()}_a.csv",
+            "*.csv",
+        ]
+        for pat in patterns:
+            found = sorted(data_dir.glob(pat), key=lambda p: p.stat().st_mtime, reverse=True)
+            if found:
+                source_csv = found[0]
+                break
+
+    if source_csv is None or not source_csv.exists():
+        raise HTTPException(status_code=404, detail="Nie znaleziono źródłowego CSV z danymi.")
+
+    df = pd.read_csv(source_csv)
+    df.columns = [str(c).strip() for c in df.columns]
+
+    if "date" not in df.columns and "effectiveDate" in df.columns:
+        df = df.rename(columns={"effectiveDate": "date"})
+    if "value" not in df.columns and "mid" in df.columns:
+        df = df.rename(columns={"mid": "value"})
+    if "value" not in df.columns:
+        numeric_cols = [c for c in df.columns if c != "date"]
+        if len(numeric_cols) == 1:
+            df = df.rename(columns={numeric_cols[0]: "value"})
+
+    if "date" not in df.columns or "value" not in df.columns:
+        raise HTTPException(status_code=500, detail="Źródłowy CSV nie ma kolumn date/value.")
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = df.dropna(subset=["date", "value"]).sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+    return df
+
+
+def _get_latest_value_info(run_path: Path) -> dict[str, Any] | None:
+    df = _read_source_csv_for_latest(run_path)
     if df.empty:
         return None
 
@@ -202,7 +186,7 @@ def _last_rate() -> Optional[dict]:
     delta = value - prevv
 
     return {
-        "date": str(pd.to_datetime(last["date"]).date()),
+        "date": pd.to_datetime(last["date"]).isoformat(),
         "value": value,
         "prevValue": prevv,
         "delta": delta,
@@ -210,325 +194,315 @@ def _last_rate() -> Optional[dict]:
     }
 
 
-def _read_json(path: Path) -> Optional[dict]:
-    if not path.exists():
-        return None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return _json_safe(data)
-    except Exception:
-        return None
+def _compat_results_payload(run_path: Path) -> dict[str, Any]:
+    metrics = _run_json(run_path, "metrics.json", required=False) or {}
+    summary = _run_json(run_path, "summary.json", required=False) or {}
+    run_config = _run_json(run_path, "run_config.json", required=False) or {}
+    forecast_points = _run_csv(run_path, "forecast_points.csv", required=False)
+
+    forecast_by_h: dict[str, list[dict[str, Any]]] = {}
+    if not forecast_points.empty:
+        for _, row in forecast_points.iterrows():
+            h = str(int(row["H"]))
+            forecast_by_h[h] = [row.where(pd.notna(row), None).to_dict()]
+
+    latest = _get_latest_value_info(run_path)
+
+    # stary frontend chciał metrics + czasem forecast7 itd.
+    out = {
+        "lastRate": latest,
+        "runConfig": run_config,
+        "metrics": metrics,
+        "summary": summary,
+        "forecast7": forecast_by_h.get("7", []),
+        "forecast30": forecast_by_h.get("30", []),
+        "forecast90": forecast_by_h.get("90", []),
+        "forecast180": forecast_by_h.get("180", []),
+        "forecast365": forecast_by_h.get("365", []),
+        "updatedAt": pd.Timestamp.utcnow().isoformat(),
+        "runDir": str(run_path),
+    }
+    return out
 
 
-def _read_metrics() -> Optional[dict]:
-    return _read_json(RESULTS_DIR / "metrics.json")
-
-
-def _read_run_config() -> Optional[dict]:
-    return _read_json(RESULTS_DIR / "run_config.json")
-
-
-def _read_backtest() -> Optional[dict]:
-    return _read_json(RESULTS_DIR / "backtest.json")
-
-
-def _read_forecast_csv(filename: str) -> list[dict]:
-    p = RESULTS_DIR / filename
+def _safe_predictions_file(run_path: Path, h: int) -> Path:
+    p = run_path / f"predictions_H{h}.csv"
     if not p.exists():
-        return []
-    df = pd.read_csv(p)
-    df = df.astype(object).where(pd.notna(df), None)
-    return _json_safe(df.to_dict(orient="records"))
+        raise HTTPException(status_code=404, detail=f"Brak predictions_H{h}.csv")
+    return p
 
 
-# =========================
-# Endpoints
-# =========================
+def _safe_horizon_metrics(run_path: Path, h: int) -> dict[str, Any]:
+    metrics = _run_json(run_path, "metrics.json")
+    by_h = metrics.get("by_horizon", {})
+    if str(h) not in by_h:
+        raise HTTPException(status_code=404, detail=f"Brak metryk dla H={h}")
+    return by_h[str(h)]
+
+
+def _tail_text(text: str, max_chars: int = 40000) -> str:
+    if len(text) <= max_chars:
+        return text
+    return text[-max_chars:]
+
+
+# =========================================================
+# Health
+# =========================================================
 @app.get("/api/health")
 def health():
-    return {"ok": True, "time": datetime.utcnow().isoformat()}
+    return {
+        "ok": True,
+        "time": pd.Timestamp.utcnow().isoformat(),
+        "pair": _pair_label(),
+    }
 
 
-@app.post("/api/fetch")
-def api_fetch(req: FetchReq):
-    _reset_log()
-    RUN_STATE.update(running=True, stage="fetch", error=None, startedAt=datetime.utcnow().isoformat(), finishedAt=None)
-    _log(f"START /api/fetch payload={req.model_dump()}")
+# =========================================================
+# Runs API
+# =========================================================
+@app.get("/api/runs")
+def list_runs(limit: int = Query(20, ge=1, le=200)):
+    runs = _find_run_dirs()[:limit]
+    out = []
+    for r in runs:
+        status_path = r / "pipeline_status.json"
+        summary_path = r / "summary.json"
 
-    try:
-        if not FETCH_PY.exists():
-            raise HTTPException(status_code=500, detail=f"Missing fetch script: {FETCH_PY}")
+        item = {
+            "name": r.name,
+            "path": str(r),
+            "modified": pd.Timestamp(r.stat().st_mtime, unit="s").isoformat(),
+        }
 
-        out_csv = _data_csv_for_freq(req.freq)
+        if status_path.exists():
+            try:
+                item["pipeline_status"] = _json_load(status_path)
+            except Exception:
+                pass
 
-        cmd = [
-            sys.executable, "-u", str(FETCH_PY),
-            "--years", str(req.years),
-            "--out", str(out_csv),
-            "--freq", req.freq,
-            "--log-level", req.logLevel,
-        ]
-        if req.refresh:
-            cmd.append("--refresh")
-        if req.freq == "hourly":
-            cmd += ["--hourly-provider", req.hourlyProvider]
-            if req.fillWeekends:
-                cmd.append("--fill-weekends")
+        if summary_path.exists():
+            try:
+                item["summary"] = _json_load(summary_path)
+            except Exception:
+                pass
 
-        logs = _run(cmd)
-        _log("DONE /api/fetch OK")
+        out.append(item)
 
-        return _json_safe({
-            "ok": True,
-            "logs": logs,
-            "lastRate": _last_rate(),
-            "updatedAt": datetime.utcnow().isoformat(),
-        })
-
-    except Exception as e:
-        RUN_STATE["error"] = str(e)
-        _log(f"ERROR: {e}")
-        raise
-    finally:
-        RUN_STATE.update(running=False, stage=None, finishedAt=datetime.utcnow().isoformat())
+    return {"runs": out}
 
 
-@app.post("/api/train")
-def api_train(req: TrainReq):
-    _reset_log()
-    RUN_STATE.update(running=True, stage="train", error=None, startedAt=datetime.utcnow().isoformat(), finishedAt=None)
-    _log(f"START /api/train payload={req.model_dump()}")
-
-    try:
-        if not TRAIN_PY.exists():
-            raise HTTPException(status_code=500, detail=f"Missing train script: {TRAIN_PY}")
-
-        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-        data_csv = _data_csv_for_freq(req.dataFreq)
-        if not data_csv.exists():
-            raise HTTPException(status_code=404, detail=f"No data yet for freq={req.dataFreq}. Run fetch first.")
-
-        f30 = req.forecastDays30 if req.forecastDays30 is not None else (req.forecastDays1m or 22)
-        f365 = req.forecastDays365 if req.forecastDays365 is not None else (req.forecastDays12m or 260)
-
-        cmd = [
-            sys.executable, "-u", str(TRAIN_PY),
-            "--data", str(data_csv),
-            "--test-size-samples", str(req.testSizeSamples),
-            "--val-size-samples", str(req.valSizeSamples),
-            "--zoom-window-days", str(req.zoomWindowDays),
-
-            "--forecast-days-7", str(req.forecastDays7),
-            "--forecast-days-30", str(f30),
-            "--forecast-days-90", str(req.forecastDays90),
-            "--forecast-days-180", str(req.forecastDays180),
-            "--forecast-days-365", str(f365),
-
-            "--backtest-windows", str(req.backtestWindows),
-            "--log-level", req.logLevel,
-        ]
-        if req.noTuning:
-            cmd.append("--no-tuning")
-
-        logs = _run(cmd)
-        _log("DONE /api/train OK")
-
-        return _json_safe({
-            "ok": True,
-            "logs": logs,
-            "lastRate": _last_rate(),
-            "runConfig": _read_run_config(),
-            "metrics": _read_metrics(),
-            "backtest": _read_backtest(),
-            "forecast7": _read_forecast_csv("forecast_next7.csv"),
-            "forecast30": _read_forecast_csv("forecast_next30.csv"),
-            "forecast90": _read_forecast_csv("forecast_next90.csv"),
-            "forecast180": _read_forecast_csv("forecast_next180.csv"),
-            "forecast365": _read_forecast_csv("forecast_next365.csv"),
-            "forecast1m": _read_forecast_csv("forecast_next1m.csv"),
-            "forecast12m": _read_forecast_csv("forecast_next12m.csv"),
-            "updatedAt": datetime.utcnow().isoformat(),
-        })
-
-    except Exception as e:
-        RUN_STATE["error"] = str(e)
-        _log(f"ERROR: {e}")
-        raise
-    finally:
-        RUN_STATE.update(running=False, stage=None, finishedAt=datetime.utcnow().isoformat())
+@app.get("/api/runs/latest")
+def latest_run():
+    run_path = _latest_run()
+    return {
+        "name": run_path.name,
+        "path": str(run_path),
+    }
 
 
+@app.get("/api/runs/{run_name}/summary")
+def run_summary(run_name: str):
+    run_path = _resolve_run(run_name)
+    return _run_json(run_path, "summary.json")
+
+
+@app.get("/api/runs/{run_name}/metrics")
+def run_metrics(run_name: str):
+    run_path = _resolve_run(run_name)
+    return _run_json(run_path, "metrics.json")
+
+
+@app.get("/api/runs/{run_name}/backtest")
+def run_backtest(run_name: str):
+    run_path = _resolve_run(run_name)
+    return _run_json(run_path, "backtest.json")
+
+
+@app.get("/api/runs/{run_name}/forecast")
+def run_forecast(run_name: str, h: int = Query(..., ge=1)):
+    run_path = _resolve_run(run_name)
+    df = _run_csv(run_path, "forecast_points.csv")
+    df = df[df["H"] == h].copy()
+    if df.empty:
+        raise HTTPException(status_code=404, detail=f"Brak forecast dla H={h}")
+    df = df.where(pd.notna(df), None)
+    return {"rows": df.to_dict(orient="records")}
+
+
+@app.get("/api/runs/{run_name}/predictions")
+def run_predictions(run_name: str, h: int = Query(..., ge=1)):
+    run_path = _resolve_run(run_name)
+    df = pd.read_csv(_safe_predictions_file(run_path, h))
+    df = df.where(pd.notna(df), None)
+    return {"rows": df.to_dict(orient="records")}
+
+
+@app.get("/api/runs/{run_name}/logs")
+def run_logs(run_name: str, offset: int = Query(0, ge=0)):
+    run_path = _resolve_run(run_name)
+    text = _read_pipeline_log(run_path)
+    if offset > len(text):
+        offset = 0
+    chunk = text[offset:]
+    return {
+        "text": chunk,
+        "nextOffset": offset + len(chunk),
+        "run": run_path.name,
+    }
+
+
+# =========================================================
+# Run pipeline
+# =========================================================
 @app.post("/api/run")
 def api_run(req: RunReq):
-    _reset_log()
-    RUN_STATE.update(running=True, stage="fetch", error=None, startedAt=datetime.utcnow().isoformat(), finishedAt=None)
-    _log(f"START /api/run payload={req.model_dump()}")
+    config_path = resolve_path(req.config)
+    if not config_path.exists():
+        raise HTTPException(status_code=404, detail=f"Nie znaleziono configu: {config_path}")
 
+    cmd = [sys.executable, "-m", "src.run_experiment", "--config", str(config_path)]
+
+    if req.skip_fetch:
+        cmd.append("--skip-fetch")
+    if req.skip_build:
+        cmd.append("--skip-build")
+    if req.skip_train:
+        cmd.append("--skip-train")
+    if req.no_tuning:
+        cmd.append("--no-tuning")
+    if req.val_size_samples is not None:
+        cmd += ["--val-size-samples", str(req.val_size_samples)]
+    if req.test_size_samples is not None:
+        cmd += ["--test-size-samples", str(req.test_size_samples)]
+    if req.backtest_windows is not None:
+        cmd += ["--backtest-windows", str(req.backtest_windows)]
+
+    proc = subprocess.run(
+        cmd,
+        cwd=str(PROJECT_ROOT),
+        text=True,
+        capture_output=True,
+    )
+
+    # nawet przy błędzie spróbujmy znaleźć najnowszy run
+    latest_run_path = None
     try:
-        if not FETCH_PY.exists():
-            raise HTTPException(status_code=500, detail=f"Missing fetch script: {FETCH_PY}")
-        if not TRAIN_PY.exists():
-            raise HTTPException(status_code=500, detail=f"Missing train script: {TRAIN_PY}")
+        latest_run_path = _latest_run()
+    except Exception:
+        latest_run_path = None
 
-        _log("STAGE fetch")
-        out_csv = _data_csv_for_freq(req.freq)
-        cmd_fetch = [
-            sys.executable, "-u", str(FETCH_PY),
-            "--years", str(req.years),
-            "--out", str(out_csv),
-            "--freq", req.freq,
-            "--log-level", req.logLevel,
-        ]
-        if req.refresh:
-            cmd_fetch.append("--refresh")
-        if req.freq == "hourly":
-            cmd_fetch += ["--hourly-provider", req.hourlyProvider]
-            if req.fillWeekends:
-                cmd_fetch.append("--fill-weekends")
-        _run_stream(cmd_fetch)
+    if proc.returncode != 0:
+        detail = {
+            "message": "Pipeline failed",
+            "returncode": proc.returncode,
+            "stdout": _tail_text(proc.stdout or ""),
+            "stderr": _tail_text(proc.stderr or ""),
+            "latestRun": str(latest_run_path) if latest_run_path else None,
+        }
+        raise HTTPException(status_code=500, detail=detail)
 
-        RUN_STATE["stage"] = "train"
-        _log("STAGE train")
+    payload = {
+        "ok": True,
+        "stdout": _tail_text(proc.stdout or ""),
+        "stderr": _tail_text(proc.stderr or ""),
+        "runDir": str(latest_run_path) if latest_run_path else None,
+    }
 
-        data_csv = _data_csv_for_freq(req.dataFreq)
-        if not data_csv.exists():
-            raise HTTPException(status_code=404, detail=f"No data yet for dataFreq={req.dataFreq}. Run fetch first.")
+    if latest_run_path:
+        payload["results"] = _compat_results_payload(latest_run_path)
 
-        f30 = req.forecastDays30 if req.forecastDays30 is not None else (req.forecastDays1m or 22)
-        f365 = req.forecastDays365 if req.forecastDays365 is not None else (req.forecastDays12m or 260)
-
-        cmd_train = [
-            sys.executable, "-u", str(TRAIN_PY),
-            "--data", str(data_csv),
-            "--test-size-samples", str(req.testSizeSamples),
-            "--val-size-samples", str(req.valSizeSamples),
-            "--zoom-window-days", str(req.zoomWindowDays),
-
-            "--forecast-days-7", str(req.forecastDays7),
-            "--forecast-days-30", str(f30),
-            "--forecast-days-90", str(req.forecastDays90),
-            "--forecast-days-180", str(req.forecastDays180),
-            "--forecast-days-365", str(f365),
-
-            "--backtest-windows", str(req.backtestWindows),
-            "--log-level", req.logLevel,
-        ]
-        if req.noTuning:
-            cmd_train.append("--no-tuning")
-
-        _run_stream(cmd_train)
-
-        logs = _read_log_text()
-        _log("DONE /api/run OK")
-
-        return _json_safe({
-            "ok": True,
-            "logs": logs,
-            "lastRate": _last_rate(),
-            "runConfig": _read_run_config(),
-            "metrics": _read_metrics(),
-            "backtest": _read_backtest(),
-            "forecast7": _read_forecast_csv("forecast_next7.csv"),
-            "forecast30": _read_forecast_csv("forecast_next30.csv"),
-            "forecast90": _read_forecast_csv("forecast_next90.csv"),
-            "forecast180": _read_forecast_csv("forecast_next180.csv"),
-            "forecast365": _read_forecast_csv("forecast_next365.csv"),
-            "forecast1m": _read_forecast_csv("forecast_next1m.csv"),
-            "forecast12m": _read_forecast_csv("forecast_next12m.csv"),
-            "updatedAt": datetime.utcnow().isoformat(),
-        })
-
-    except Exception as e:
-        RUN_STATE["error"] = str(e)
-        _log(f"ERROR: {e}")
-        raise
-    finally:
-        RUN_STATE.update(running=False, stage=None, finishedAt=datetime.utcnow().isoformat())
+    return payload
 
 
+# =========================================================
+# Compatibility endpoints for current frontend
+# =========================================================
 @app.get("/api/results")
 def api_results():
-    return _json_safe({
-        "lastRate": _last_rate(),
-        "runConfig": _read_run_config(),
-        "metrics": _read_metrics(),
-        "backtest": _read_backtest(),
-        "forecast7": _read_forecast_csv("forecast_next7.csv"),
-        "forecast30": _read_forecast_csv("forecast_next30.csv"),
-        "forecast90": _read_forecast_csv("forecast_next90.csv"),
-        "forecast180": _read_forecast_csv("forecast_next180.csv"),
-        "forecast365": _read_forecast_csv("forecast_next365.csv"),
-        "forecast1m": _read_forecast_csv("forecast_next1m.csv"),
-        "forecast12m": _read_forecast_csv("forecast_next12m.csv"),
-        "updatedAt": datetime.utcnow().isoformat(),
-    })
+    run_path = _latest_run()
+    return _compat_results_payload(run_path)
 
 
 @app.get("/api/series")
-def api_series(days: int = 365, freq: str = "daily"):
-    csv = _data_csv_for_freq(freq)
-    if not csv.exists():
-        return {"series": []}
-    df = pd.read_csv(csv, parse_dates=["date"]).sort_values("date")
-    df = df.tail(days) if days > 0 else df
+def api_series(days: int = Query(365, ge=1, le=20000)):
+    run_path = _latest_run()
+    df = _read_source_csv_for_latest(run_path)
+    df = df.tail(days)
     return {
         "series": [
-            {"date": pd.to_datetime(d).isoformat(), "value": float(v)}
-            for d, v in zip(df["date"], df["value"])
+            {
+                "date": pd.to_datetime(row["date"]).isoformat(),
+                "value": float(row["value"]),
+            }
+            for _, row in df.iterrows()
         ]
     }
 
 
 @app.get("/api/data")
-def api_data(limit: int = 500, freq: str = "daily"):
-    csv = _data_csv_for_freq(freq)
-    if not csv.exists():
-        return {"rows": []}
-    df = pd.read_csv(csv, parse_dates=["date"]).sort_values("date").tail(limit)
+def api_data(limit: int = Query(500, ge=1, le=50000)):
+    run_path = _latest_run()
+    df = _read_source_csv_for_latest(run_path).tail(limit)
     return {
         "rows": [
-            {"date": pd.to_datetime(d).isoformat(), "value": float(v)}
-            for d, v in zip(df["date"], df["value"])
+            {
+                "date": pd.to_datetime(row["date"]).isoformat(),
+                "value": float(row["value"]),
+            }
+            for _, row in df.iterrows()
         ]
     }
 
 
-@app.get("/api/export/data.xlsx")
-def api_export_data_xlsx(limit: int = 500, freq: str = "daily"):
-    csv = _data_csv_for_freq(freq)
-    if not csv.exists():
-        raise HTTPException(status_code=404, detail="No data yet. Run fetch.")
-
-    limit = max(1, min(int(limit), 20000))
-    df = pd.read_csv(csv, parse_dates=["date"]).sort_values("date").tail(limit)
-
-    from openpyxl import Workbook
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = f"EURPLN_{freq}"
-    ws.append(["date", "value"])
-    for d, v in zip(df["date"], df["value"]):
-        ws.append([pd.to_datetime(d).isoformat(), float(v)])
-
-    bio = BytesIO()
-    wb.save(bio)
-    bio.seek(0)
-
-    headers = {"Content-Disposition": f"attachment; filename=eurpln_{freq}.xlsx"}
-    return StreamingResponse(
-        bio,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers=headers,
-    )
+@app.get("/api/logs")
+def api_logs(offset: int = Query(0, ge=0)):
+    run_path = _latest_run()
+    text = _read_pipeline_log(run_path)
+    if offset > len(text):
+        offset = 0
+    chunk = text[offset:]
+    return {
+        "text": chunk,
+        "logs": chunk,  # kompatybilność
+        "nextOffset": offset + len(chunk),
+        "state": {
+            "run": run_path.name,
+            "finished": True,
+        },
+    }
 
 
+@app.get("/api/predictions")
+def api_predictions(h: int = Query(30, ge=1)):
+    run_path = _latest_run()
+    df = pd.read_csv(_safe_predictions_file(run_path, h))
+    df = df.where(pd.notna(df), None)
+    return {"rows": df.to_dict(orient="records")}
+
+
+@app.get("/api/forecast")
+def api_forecast(h: int = Query(30, ge=1)):
+    run_path = _latest_run()
+    df = _run_csv(run_path, "forecast_points.csv")
+    df = df[df["H"] == h].copy()
+    if df.empty:
+        raise HTTPException(status_code=404, detail=f"Brak forecast dla H={h}")
+    df = df.where(pd.notna(df), None)
+    return {"rows": df.to_dict(orient="records")}
+
+
+# =========================================================
+# Artifacts + export
+# =========================================================
 @app.get("/api/artifacts/{filename}")
-def api_artifacts(filename: str):
-    p = (RESULTS_DIR / filename).resolve()
-    if not str(p).startswith(str(RESULTS_DIR.resolve())):
+def api_artifacts(filename: str, run: Optional[str] = None):
+    run_path = _resolve_run(run)
+    p = (run_path / filename).resolve()
+
+    if not str(p).startswith(str(run_path.resolve())):
         raise HTTPException(status_code=400, detail="Invalid path")
+
     if not p.exists():
         raise HTTPException(status_code=404, detail="Not found")
 
@@ -540,15 +514,31 @@ def api_artifacts(filename: str):
     )
 
 
-@app.get("/api/logs")
-def api_logs(offset: int = 0):
-    txt = _read_log_text()
-    offset = max(0, int(offset))
-    if offset > len(txt):
-        offset = 0
-    chunk = txt[offset:]
-    return _json_safe({
-        "text": chunk,
-        "nextOffset": offset + len(chunk),
-        "state": RUN_STATE,
-    })
+@app.get("/api/export/data.xlsx")
+def api_export_data_xlsx(limit: int = Query(500, ge=1, le=50000)):
+    run_path = _latest_run()
+    df = _read_source_csv_for_latest(run_path).tail(limit)
+
+    from openpyxl import Workbook
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "EURPLN"
+    ws.append(["date", "value"])
+
+    for _, row in df.iterrows():
+        ws.append([
+            pd.to_datetime(row["date"]).isoformat(),
+            float(row["value"]),
+        ])
+
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+
+    headers = {"Content-Disposition": "attachment; filename=eurpln_data.xlsx"}
+    return StreamingResponse(
+        bio,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers=headers,
+    )
