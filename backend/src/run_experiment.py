@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from src.config import load_config, make_run_dir, resolve_path, save_run_config
+from .config import load_config, make_run_dir, resolve_path, save_run_config
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 

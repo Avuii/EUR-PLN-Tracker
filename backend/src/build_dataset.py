@@ -10,7 +10,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from src.config import (
+from .config import (
     get_data_dir,
     get_effective_window_for_horizon,
     load_config,

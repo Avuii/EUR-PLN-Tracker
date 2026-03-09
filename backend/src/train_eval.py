@@ -19,7 +19,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from src.config import (
+from .config import (
     get_data_dir,
     load_config,
     make_run_dir,
