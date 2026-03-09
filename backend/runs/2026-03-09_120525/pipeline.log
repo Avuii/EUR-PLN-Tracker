@@ -1,0 +1,75 @@
+2026-03-09 12:05:25,710 | INFO | START run_experiment | run_dir=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_120525
+2026-03-09 12:05:25,710 | INFO | [fetch] Attempt 1: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_120525
+2026-03-09 12:05:26,162 | INFO | [fetch] STDERR:
+usage: fetch_nbp.py [-h] [--years YEARS] --out OUT [--freq {daily,hourly}]
+                    [--hourly-provider {derived}] [--fill-weekends]
+                    [--refresh] [--log-level LOG_LEVEL]
+fetch_nbp.py: error: the following arguments are required: --out
+2026-03-09 12:05:26,178 | INFO | [fetch] Attempt 2: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json
+2026-03-09 12:05:26,627 | INFO | [fetch] STDERR:
+usage: fetch_nbp.py [-h] [--years YEARS] --out OUT [--freq {daily,hourly}]
+                    [--hourly-provider {derived}] [--fill-weekends]
+                    [--refresh] [--log-level LOG_LEVEL]
+fetch_nbp.py: error: the following arguments are required: --out
+2026-03-09 12:05:26,627 | INFO | [fetch] Attempt 3: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp
+2026-03-09 12:05:27,118 | INFO | [fetch] STDERR:
+usage: fetch_nbp.py [-h] [--years YEARS] --out OUT [--freq {daily,hourly}]
+                    [--hourly-provider {derived}] [--fill-weekends]
+                    [--refresh] [--log-level LOG_LEVEL]
+fetch_nbp.py: error: the following arguments are required: --out
+2026-03-09 12:05:27,118 | ERROR | [fetch] FAILED after 3 attempt(s)
+2026-03-09 12:05:27,135 | ERROR | FAILED run_experiment
+Traceback (most recent call last):
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\run_experiment.py", line 200, in main
+    run_stage_with_fallbacks(
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\run_experiment.py", line 100, in run_stage_with_fallbacks
+    raise RuntimeError(
+RuntimeError: {
+  "stage": "fetch",
+  "module": "src.fetch_nbp",
+  "status": "failed",
+  "attempts": [
+    {
+      "attempt": 1,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_120525"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "usage: fetch_nbp.py [-h] [--years YEARS] --out OUT [--freq {daily,hourly}]\n                    [--hourly-provider {derived}] [--fill-weekends]\n                    [--refresh] [--log-level LOG_LEVEL]\nfetch_nbp.py: error: the following arguments are required: --out\n",
+      "seconds": 0.451
+    },
+    {
+      "attempt": 2,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "usage: fetch_nbp.py [-h] [--years YEARS] --out OUT [--freq {daily,hourly}]\n                    [--hourly-provider {derived}] [--fill-weekends]\n                    [--refresh] [--log-level LOG_LEVEL]\nfetch_nbp.py: error: the following arguments are required: --out\n",
+      "seconds": 0.449
+    },
+    {
+      "attempt": 3,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "usage: fetch_nbp.py [-h] [--years YEARS] --out OUT [--freq {daily,hourly}]\n                    [--hourly-provider {derived}] [--fill-weekends]\n                    [--refresh] [--log-level LOG_LEVEL]\nfetch_nbp.py: error: the following arguments are required: --out\n",
+      "seconds": 0.49
+    }
+  ]
+}

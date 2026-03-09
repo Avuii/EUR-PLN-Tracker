@@ -1,0 +1,122 @@
+2026-03-09 12:14:48,825 | INFO | START run_experiment | run_dir=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448
+2026-03-09 12:14:48,825 | INFO | [fetch] Attempt 1: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448
+2026-03-09 12:14:54,943 | INFO | [fetch] STDERR:
+12:14:49 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2010-01-01..2026-03-09 | refresh=False
+12:14:49 | INFO | Full fetch (refresh or empty file).
+12:14:49 | INFO | GET 2010-01-01..2010-12-26
+12:14:49 | INFO | GET 2010-12-27..2011-12-21
+12:14:49 | INFO | GET 2011-12-22..2012-12-15
+12:14:50 | INFO | GET 2012-12-16..2013-12-10
+12:14:50 | INFO | GET 2013-12-11..2014-12-05
+12:14:50 | INFO | GET 2014-12-06..2015-11-30
+12:14:51 | INFO | GET 2015-12-01..2016-11-24
+12:14:51 | INFO | GET 2016-11-25..2017-11-19
+12:14:51 | INFO | GET 2017-11-20..2018-11-14
+12:14:52 | INFO | GET 2018-11-15..2019-11-09
+12:14:52 | INFO | GET 2019-11-10..2020-11-03
+12:14:52 | INFO | GET 2020-11-04..2021-10-29
+12:14:52 | INFO | GET 2021-10-30..2022-10-24
+12:14:53 | INFO | GET 2022-10-25..2023-10-19
+12:14:53 | INFO | GET 2023-10-20..2024-10-13
+12:14:54 | INFO | GET 2024-10-14..2025-10-08
+12:14:54 | INFO | GET 2025-10-09..2026-03-09
+12:14:54 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\raw_eurpln_2010-01-01_2026-03-09.csv rows=4083
+12:14:54 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448\raw_eurpln.csv rows=4083
+12:14:54 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\raw_eurpln.csv rows=4083
+12:14:54 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\eur_a.csv rows=4083
+12:14:54 | INFO | DONE fetch daily
+2026-03-09 12:14:54,944 | INFO | [fetch] OK in 6.12s
+2026-03-09 12:14:54,944 | INFO | [build_dataset] Attempt 1: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.build_dataset --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448
+2026-03-09 12:14:57,310 | INFO | [build_dataset] STDERR:
+2026-03-09 12:14:55,313 | INFO | START build_dataset | pair=eurpln | H=[1, 7, 30, 90, 180, 365]
+2026-03-09 12:14:55,313 | INFO | rolling_windows=[5, 10, 20, 60] | ema_spans=[10, 20]
+2026-03-09 12:14:55,313 | INFO | Znaleziono plik ĹşrĂłdĹ‚owy: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448\raw_eurpln.csv
+2026-03-09 12:14:55,326 | INFO | Source rows=4083 | range=2010-01-04..2026-03-09
+2026-03-09 12:14:55,326 | INFO | H=1 -> W=20
+2026-03-09 12:14:55,461 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4023 | cols=48 | W=20
+2026-03-09 12:14:55,461 | INFO | H=7 -> W=30
+2026-03-09 12:14:55,605 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H7.csv | rows=4017 | cols=58 | W=30
+2026-03-09 12:14:55,622 | INFO | H=30 -> W=60
+2026-03-09 12:14:55,841 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H30.csv | rows=3994 | cols=88 | W=60
+2026-03-09 12:14:55,841 | INFO | H=90 -> W=120
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:175: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"lag_{k}"] = d["value"].shift(k)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:177: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["delta_1"] = d["value"].diff(1)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:178: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["logret_1"] = np.log(d["value"]).diff(1)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:181: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"sma_{win}"] = d["value"].rolling(win).mean()
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:182: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"std_{win}"] = d["value"].rolling(win).std(ddof=0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:185: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"ema_{span}"] = d["value"].ewm(span=span, adjust=False).mean()
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:190: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow"] = dow
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:191: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month"] = month
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:192: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow_sin"] = np.sin(2 * np.pi * dow / 7.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:193: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow_cos"] = np.cos(2 * np.pi * dow / 7.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:194: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month_sin"] = np.sin(2 * np.pi * (month - 1) / 12.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:195: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month_cos"] = np.cos(2 * np.pi * (month - 1) / 12.0)
+2026-03-09 12:14:56,187 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H90.csv | rows=3874 | cols=148 | W=120
+2026-03-09 12:14:56,187 | INFO | H=180 -> W=180
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:175: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"lag_{k}"] = d["value"].shift(k)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:177: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["delta_1"] = d["value"].diff(1)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:178: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["logret_1"] = np.log(d["value"]).diff(1)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:181: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"sma_{win}"] = d["value"].rolling(win).mean()
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:182: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"std_{win}"] = d["value"].rolling(win).std(ddof=0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:185: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"ema_{span}"] = d["value"].ewm(span=span, adjust=False).mean()
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:190: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow"] = dow
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:191: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month"] = month
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:192: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow_sin"] = np.sin(2 * np.pi * dow / 7.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:193: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow_cos"] = np.cos(2 * np.pi * dow / 7.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:194: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month_sin"] = np.sin(2 * np.pi * (month - 1) / 12.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:195: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month_cos"] = np.cos(2 * np.pi * (month - 1) / 12.0)
+2026-03-09 12:14:56,649 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H180.csv | rows=3724 | cols=208 | W=180
+2026-03-09 12:14:56,649 | INFO | H=365 -> W=260
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:175: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"lag_{k}"] = d["value"].shift(k)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:177: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["delta_1"] = d["value"].diff(1)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:178: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["logret_1"] = np.log(d["value"]).diff(1)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:181: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"sma_{win}"] = d["value"].rolling(win).mean()
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:182: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"std_{win}"] = d["value"].rolling(win).std(ddof=0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:185: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d[f"ema_{span}"] = d["value"].ewm(span=span, adjust=False).mean()
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:190: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow"] = dow
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:191: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month"] = month
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:192: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow_sin"] = np.sin(2 * np.pi * dow / 7.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:193: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["dow_cos"] = np.cos(2 * np.pi * dow / 7.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:194: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month_sin"] = np.sin(2 * np.pi * (month - 1) / 12.0)
+C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\build_dataset.py:195: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  d["month_cos"] = np.cos(2 * np.pi * (month - 1) / 12.0)
+2026-03-09 12:14:57,267 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H365.csv | rows=3459 | cols=288 | W=260
+2026-03-09 12:14:57,268 | INFO | Saved manifest: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448\datasets_manifest.json
+2026-03-09 12:14:57,268 | INFO | DONE build_dataset
+2026-03-09 12:14:57,313 | INFO | [build_dataset] OK in 2.37s
+2026-03-09 12:14:57,313 | INFO | [train_eval] Attempt 1: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.train_eval --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_121448 --no-tuning
