@@ -1,0 +1,66 @@
+{
+  "pair": "eurpln",
+  "source_csv": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_122759\\raw_eurpln.csv",
+  "window_mode": "auto",
+  "window_W_default": 60,
+  "rolling_windows": [
+    5,
+    10,
+    20,
+    60
+  ],
+  "ema_spans": [
+    10,
+    20
+  ],
+  "datasets": {
+    "H1": {
+      "path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\data\\ds_H1.csv",
+      "rows": 4023,
+      "cols": 48,
+      "W_used": 20,
+      "lag_cols": 20,
+      "forecast_horizon_H": 1
+    },
+    "H7": {
+      "path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\data\\ds_H7.csv",
+      "rows": 4017,
+      "cols": 58,
+      "W_used": 30,
+      "lag_cols": 30,
+      "forecast_horizon_H": 7
+    },
+    "H30": {
+      "path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\data\\ds_H30.csv",
+      "rows": 3994,
+      "cols": 88,
+      "W_used": 60,
+      "lag_cols": 60,
+      "forecast_horizon_H": 30
+    },
+    "H90": {
+      "path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\data\\ds_H90.csv",
+      "rows": 3874,
+      "cols": 148,
+      "W_used": 120,
+      "lag_cols": 120,
+      "forecast_horizon_H": 90
+    },
+    "H180": {
+      "path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\data\\ds_H180.csv",
+      "rows": 3724,
+      "cols": 208,
+      "W_used": 180,
+      "lag_cols": 180,
+      "forecast_horizon_H": 180
+    },
+    "H365": {
+      "path": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\data\\ds_H365.csv",
+      "rows": 3459,
+      "cols": 288,
+      "W_used": 260,
+      "lag_cols": 260,
+      "forecast_horizon_H": 365
+    }
+  }
+}

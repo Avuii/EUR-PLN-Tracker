@@ -1,0 +1,21 @@
+{
+  "pair": "EUR/PLN",
+  "generated_at": "2026-03-09 11:37:32.757165+00:00",
+  "horizons": [
+    1,
+    7,
+    30,
+    90,
+    180,
+    365
+  ],
+  "best_model_by_horizon": {
+    "1": "Naive",
+    "7": "Naive",
+    "30": "Ridge",
+    "90": "SMA",
+    "180": "ExtraTrees",
+    "365": "ElasticNet"
+  },
+  "run_dir": "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_122759"
+}
