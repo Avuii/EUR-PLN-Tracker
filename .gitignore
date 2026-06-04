@@ -1,0 +1,95 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.pyre/
+.ipynb_checkpoints/
+
+# Python virtual environments
+.venv/
+.venv1/
+venv/
+env/
+ENV/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Backend generated files
+backend/runs/
+backend/data/
+backend/**/*.log
+backend/**/pipeline.log
+backend/**/app.log
+
+# Keep folder placeholders if needed
+!backend/runs/.gitkeep
+!backend/data/.gitkeep
+
+# Frontend dependencies
+frontend/node_modules/
+node_modules/
+
+# Vite / React build output
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.vite-cache/
+
+# Frontend logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# TypeScript / tooling cache
+frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Local certificates
+*.pem
+*.key
+*.crt
+
+# Generated exports
+*.xlsx
+*.xls
+*.csv.tmp
+*.tmp
+
+# Optional model artifacts
+*.pkl
+*.joblib
+*.onnx
+*.h5
+*.keras
+
+# Do not ignore screenshots used in README
+!screenshots/
+!screenshots/*.png
+!screenshots/*.jpg
+!screenshots/*.jpeg
