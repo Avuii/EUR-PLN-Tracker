@@ -200,25 +200,22 @@ The API reads the newest successful run with generated artifacts.
 ---
 
 <a id="frontend-dashboard"></a>
-
 ## 🖥️ Frontend Dashboard
 
 The frontend is divided into several tabs.
 
-Tab	Description
-Podsumowanie	main dashboard with latest rate, daily change, metrics and chart
-Dane	historical EUR/PLN data table and data overview
-Prognozy	model forecasts for selected horizons
-Ewaluacja	true vs predicted values and test metrics
-Analiza błędów	residuals and largest prediction errors
-Modele	model configuration and selected best model
-Logi	backend logs from pipeline runs
+| Tab | Description |
+|---|---|
+| Podsumowanie | main dashboard with latest exchange rate, daily change, metrics and historical chart |
+| Dane | historical EUR/PLN data table and latest records |
+| Prognozy | forecasts for selected horizons and models |
+| Ewaluacja | true vs predicted values and test metrics |
+| Analiza błędów | residuals, error distribution and largest prediction errors |
+| Modele | model configuration, available models and selected best model |
+| Logi | backend logs from pipeline runs |
 
 ---
 
-<a id="screenshots"></a>
-
-## 📸 Screenshots
 <a id="screenshots"></a>
 ## 📸 Screenshots
 
@@ -261,104 +258,136 @@ Logi	backend logs from pipeline runs
 ---
 
 <a id="tech-stack"></a>
-
 ## 🛠️ Tech Stack
-Area	Technology
-Backend	Python
-API	FastAPI
-Data processing	pandas, NumPy
-Machine learning	scikit-learn
-Time series model	SARIMAX
-Optional ML models	XGBoost, LightGBM
-Frontend	React
-Frontend language	TypeScript
-Build tool	Vite
-Charts	Recharts
-Icons	Lucide React
-Styling	CSS, Tailwind, glassmorphism
-Data source	NBP API
+
+| Area | Technology |
+|---|---|
+| Backend | Python |
+| API | FastAPI |
+| Data processing | pandas, NumPy |
+| Machine learning | scikit-learn |
+| Time series model | SARIMAX |
+| Optional ML models | XGBoost, LightGBM |
+| Frontend | React |
+| Frontend language | TypeScript |
+| Build tool | Vite |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Styling | CSS, Tailwind, dark glassmorphism |
+| Data source | NBP API |
+| Deployment | GitHub Pages frontend + separate FastAPI backend |
 
 ---
 
-<a id="requirements"></a>
 
+<a id="requirements"></a>
 ## ⚙️ Requirements
 
 To run the project locally, you need:
 
-Python 3.10 or newer
-Node.js 18 or newer
-npm
-Git
-modern web browser
+- Python 3.10 or newer
+- Node.js 18 or newer
+- npm
+- Git
+- modern web browser
 
 Recommended:
 
-Visual Studio Code
-PowerShell or Windows Terminal
+- Visual Studio Code
+- PowerShell or Windows Terminal
 
 ---
-<a id="getting-started"></a>
 
+<a id="getting-started"></a>
 ## 🚀 Getting Started
 
-1. Clone the repository
-git clone https://github.com/your-username/EUR-PLN-Tracker.git
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Avuii/EUR-PLN-Tracker.git
 cd EUR-PLN-Tracker
-2. Install backend dependencies
+```
+
+### 2. Install backend dependencies
+
+```bash
 cd backend
 py -m pip install -r requirements.txt
-3. Run the ML pipeline
+```
+
+### 3. Run the ML pipeline
 
 For a faster local run without hyperparameter tuning:
 
+```bash
 py -m src.run_experiment --config configs/config.json --no-tuning
+```
 
 For the full experiment:
 
+```bash
 py -m src.run_experiment --config configs/config.json
+```
 
 The generated results will be saved in:
 
+```text
 backend/runs/
-4. Run the backend API
+```
+
+### 4. Run the backend API
+
+```bash
 py -m uvicorn api.api:app --reload --host 127.0.0.1 --port 8000
+```
 
 The backend should be available at:
 
+```text
 http://127.0.0.1:8000
+```
 
 Health check:
 
+```text
 http://127.0.0.1:8000/api/health
-5. Run the frontend
+```
+
+### 5. Run the frontend
 
 Open a second terminal:
 
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
 The frontend should be available at:
 
+```text
 http://127.0.0.1:4200
+```
+
 
 ---
 
 <a id="api-endpoints"></a>
 
 ## 🔌 API Endpoints
-Endpoint	Description
-GET /api/health	backend health check
-GET /api/results	main dashboard results
-GET /api/series?days=3650	historical EUR/PLN series
-GET /api/data?limit=500	historical data table
-GET /api/predictions?h=30	predictions for selected horizon
-GET /api/forecast?h=30	forecast point for selected horizon
-GET /api/logs	latest pipeline logs
-GET /api/runs	list of pipeline runs
-POST /api/run	run pipeline from frontend
-GET /api/export/data.xlsx	export historical data to XLSX
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/health` | backend health check |
+| `GET /api/results` | main dashboard results |
+| `GET /api/series?days=3650` | historical EUR/PLN series |
+| `GET /api/data?limit=500` | historical data table |
+| `GET /api/predictions?h=30` | predictions for selected horizon |
+| `GET /api/forecast?h=30` | forecast point for selected horizon |
+| `GET /api/logs` | latest pipeline logs |
+| `GET /api/runs` | list of pipeline runs |
+| `POST /api/run` | run pipeline from frontend |
+| `GET /api/export/data.xlsx` | export historical data to XLSX |
 
 ---
 
@@ -423,10 +452,16 @@ EUR-PLN-Tracker/
 │   └── vite.config.ts
 │
 ├── screenshots/
-│   ├── dashboard.png
-│   ├── forecast.png
-│   ├── evaluation.png
-│   └── errors.png
+│   ├── Podsumowanie.png
+│   ├── dane.png
+│   ├── dane_ostatnierekordy.png
+│   ├── ewaluacja.png
+│   ├── analizabledow.png
+│   ├── analizabledow2.png
+│   ├── modele.png
+│   ├── modele1.png
+│   ├── logi.png
+│   └── logi2.png
 │
 ├── .gitignore
 └── README.md
