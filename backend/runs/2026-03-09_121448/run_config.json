@@ -1,0 +1,72 @@
+{
+  "pair": "EUR/PLN",
+  "date_range": {
+    "start": "2010-01-01",
+    "end": "2026-03-09"
+  },
+  "horizons_H": [
+    1,
+    7,
+    30,
+    90,
+    180,
+    365
+  ],
+  "window_mode": "auto",
+  "window_by_horizon": {
+    "1": 20,
+    "7": 30,
+    "30": 60,
+    "90": 120,
+    "180": 180,
+    "365": 260
+  },
+  "split": {
+    "val_size": 130,
+    "test_size": 260
+  },
+  "training": {
+    "no_tuning": false,
+    "cv_splits": 5,
+    "random_search_iter": {
+      "Ridge": 30,
+      "ElasticNet": 40,
+      "MLPRegressor": 20,
+      "RandomForest": 40,
+      "ExtraTrees": 40,
+      "HistGB": 35,
+      "XGBoost": 25,
+      "LightGBM": 25
+    }
+  },
+  "backtest": {
+    "enabled": true,
+    "windows": 5
+  },
+  "viz": {
+    "zoom_window_days": 90,
+    "zoom_by_horizon": {
+      "1": 45,
+      "7": 60,
+      "30": 120,
+      "90": 220,
+      "180": 320,
+      "365": 520
+    }
+  },
+  "models_enabled": [
+    "Naive",
+    "SMA",
+    "EMA",
+    "Ridge",
+    "ElasticNet",
+    "RandomForest",
+    "ExtraTrees",
+    "HistGB",
+    "SARIMAX",
+    "MLPRegressor",
+    "XGBoost",
+    "LightGBM"
+  ],
+  "seed": 123
+}

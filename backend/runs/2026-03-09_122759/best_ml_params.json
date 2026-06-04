@@ -1,0 +1,50 @@
+{
+  "1": {
+    "Ridge": {},
+    "ElasticNet": {},
+    "MLPRegressor": {},
+    "RandomForest": {},
+    "ExtraTrees": {},
+    "HistGB": {}
+  },
+  "7": {
+    "Ridge": {},
+    "ElasticNet": {},
+    "MLPRegressor": {},
+    "RandomForest": {},
+    "ExtraTrees": {},
+    "HistGB": {}
+  },
+  "30": {
+    "Ridge": {},
+    "ElasticNet": {},
+    "MLPRegressor": {},
+    "RandomForest": {},
+    "ExtraTrees": {},
+    "HistGB": {}
+  },
+  "90": {
+    "Ridge": {},
+    "ElasticNet": {},
+    "MLPRegressor": {},
+    "RandomForest": {},
+    "ExtraTrees": {},
+    "HistGB": {}
+  },
+  "180": {
+    "Ridge": {},
+    "ElasticNet": {},
+    "MLPRegressor": {},
+    "RandomForest": {},
+    "ExtraTrees": {},
+    "HistGB": {}
+  },
+  "365": {
+    "Ridge": {},
+    "ElasticNet": {},
+    "MLPRegressor": {},
+    "RandomForest": {},
+    "ExtraTrees": {},
+    "HistGB": {}
+  }
+}

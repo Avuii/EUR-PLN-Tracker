@@ -1,0 +1,23 @@
+2026-06-04 23:14:21,235 | INFO | START build_dataset | pair=eurpln | H=[1, 7, 30, 90, 180, 365]
+2026-06-04 23:14:21,235 | INFO | rolling_windows=[5, 10, 20, 60] | ema_spans=[10, 20]
+2026-06-04 23:14:21,235 | INFO | Znaleziono plik źródłowy: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+2026-06-04 23:14:21,242 | INFO | Source rows=4143 | range=2010-01-04..2026-06-03
+2026-06-04 23:14:21,242 | INFO | H=1 -> W=20
+2026-06-04 23:14:21,389 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4083 | cols=48 | W=20
+2026-06-04 23:14:21,389 | INFO | H=7 -> W=30
+2026-06-04 23:14:21,542 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H7.csv | rows=4077 | cols=58 | W=30
+2026-06-04 23:14:21,542 | INFO | H=30 -> W=60
+2026-06-04 23:14:21,749 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H30.csv | rows=4054 | cols=88 | W=60
+2026-06-04 23:14:21,749 | INFO | H=90 -> W=120
+2026-06-04 23:14:22,080 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H90.csv | rows=3934 | cols=148 | W=120
+2026-06-04 23:14:22,080 | INFO | H=180 -> W=180
+2026-06-04 23:14:22,498 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H180.csv | rows=3784 | cols=208 | W=180
+2026-06-04 23:14:22,500 | INFO | H=365 -> W=260
+2026-06-04 23:14:23,036 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H365.csv | rows=3519 | cols=288 | W=260
+2026-06-04 23:14:23,036 | INFO | Saved manifest: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\datasets_manifest.json
+2026-06-04 23:14:23,036 | INFO | DONE build_dataset
+2026-06-04 23:14:24,303 | INFO | START train_eval
+2026-06-04 23:14:24,333 | INFO | H=1 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4083 | inferred W=20
+2026-06-04 23:14:24,335 | INFO | H=1 | split train=3693 | val=130 | test=260
+2026-06-04 23:14:24,336 | INFO | H=1 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 23:14:24,337 | INFO | H=1 | tuning disabled

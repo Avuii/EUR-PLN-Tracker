@@ -1,0 +1,127 @@
+{
+  "project_name": "EUR/PLN Tracker",
+  "currency": "EUR",
+  "target_quote": "PLN",
+  "nbp_table": "A",
+  "seed": 123,
+
+  "date_range": {
+    "start": "2010-01-01",
+    "end": "TODAY"
+  },
+
+  "horizons_H": [1, 7, 30, 90, 180, 365],
+
+  "window_mode": "auto",
+  "window_W": 60,
+
+  "window_by_horizon": {
+    "1": 20,
+    "7": 30,
+    "30": 60,
+    "90": 120,
+    "180": 180,
+    "365": 260
+  },
+
+  "rolling_windows": [5, 10, 20, 60],
+  "ema_spans": [10, 20],
+
+  "split": {
+    "val_size": 130,
+    "test_size": 260
+  },
+
+  "training": {
+    "no_tuning": false,
+    "cv_splits": 5,
+    "random_search_iter": {
+      "Ridge": 30,
+      "ElasticNet": 40,
+      "MLPRegressor": 20,
+      "RandomForest": 40,
+      "ExtraTrees": 40,
+      "HistGB": 35,
+      "XGBoost": 25,
+      "LightGBM": 25
+    }
+  },
+
+  "backtest": {
+    "enabled": true,
+    "windows": 5
+  },
+
+  "viz": {
+    "zoom_window_days": 90,
+    "zoom_by_horizon": {
+      "1": 45,
+      "7": 60,
+      "30": 120,
+      "90": 220,
+      "180": 320,
+      "365": 520
+    }
+  },
+
+  "models": {
+    "enabled": [
+      "Naive",
+      "SMA",
+      "EMA",
+      "Ridge",
+      "ElasticNet",
+      "RandomForest",
+      "ExtraTrees",
+      "HistGB",
+      "SARIMAX",
+      "MLPRegressor",
+      "XGBoost",
+      "LightGBM"
+    ],
+    "baseline_candidates": {
+      "SMA": [5, 10, 20, 60],
+      "EMA": [5, 10, 20, 60]
+    },
+    "prediction_intervals": {
+      "enabled": true,
+      "p80": [0.1, 0.9],
+      "p95": [0.025, 0.975]
+    },
+    "sarimax": {
+      "enabled": true,
+      "order": [1, 1, 1],
+      "seasonal_order": null,
+      "fair_refit_on_last_W": true
+    },
+    "optional_backends": {
+      "xgboost_enabled": false,
+      "lightgbm_enabled": false
+    }
+  },
+
+  "artifacts": {
+    "save_predictions_csv": true,
+    "save_metrics_csv": true,
+    "save_best_params_json": true,
+    "save_search_spaces_json": true,
+    "save_manifest_json": true,
+    "save_summary_json": true
+  },
+
+  "output": {
+    "data_dir": "data",
+    "runs_dir": "runs",
+    "log_name": "app.log",
+    "plots_dir_name": "plots"
+  },
+
+  "api": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "cors_origins": [
+      "http://localhost:4000",
+      "http://127.0.0.1:4000"
+    ]
+  }
+}

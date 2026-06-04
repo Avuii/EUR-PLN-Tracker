@@ -1,0 +1,81 @@
+2026-03-09 01:53:32,188 | INFO | START run_experiment | run_dir=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_015332
+2026-03-09 01:53:32,188 | INFO | [fetch] Attempt 1: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-03-09_015332
+2026-03-09 01:53:32,609 | INFO | [fetch] STDERR:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 8, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
+2026-03-09 01:53:32,610 | INFO | [fetch] Attempt 2: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json
+2026-03-09 01:53:33,004 | INFO | [fetch] STDERR:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 8, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
+2026-03-09 01:53:33,004 | INFO | [fetch] Attempt 3: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\.venv1\Scripts\python.exe -m src.fetch_nbp
+2026-03-09 01:53:33,400 | INFO | [fetch] STDERR:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 8, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
+2026-03-09 01:53:33,401 | ERROR | [fetch] FAILED after 3 attempt(s)
+2026-03-09 01:53:33,402 | ERROR | FAILED run_experiment
+Traceback (most recent call last):
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\run_experiment.py", line 200, in main
+    run_stage_with_fallbacks(
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\run_experiment.py", line 100, in run_stage_with_fallbacks
+    raise RuntimeError(
+RuntimeError: {
+  "stage": "fetch",
+  "module": "src.fetch_nbp",
+  "status": "failed",
+  "attempts": [
+    {
+      "attempt": 1,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-03-09_015332"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 8, in <module>\n    import requests\nModuleNotFoundError: No module named 'requests'\n",
+      "seconds": 0.421
+    },
+    {
+      "attempt": 2,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 8, in <module>\n    import requests\nModuleNotFoundError: No module named 'requests'\n",
+      "seconds": 0.394
+    },
+    {
+      "attempt": 3,
+      "command": [
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\.venv1\\Scripts\\python.exe",
+        "-m",
+        "src.fetch_nbp"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 8, in <module>\n    import requests\nModuleNotFoundError: No module named 'requests'\n",
+      "seconds": 0.397
+    }
+  ]
+}

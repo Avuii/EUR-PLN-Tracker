@@ -1,0 +1,52 @@
+2026-06-04 22:12:40,588 | INFO | START run_experiment | run_dir=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240
+2026-06-04 22:12:40,588 | INFO | [fetch] Attempt 1: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240
+2026-06-04 22:13:45,823 | INFO | [fetch] STDERR:
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!
+  warnings.warn(
+22:12:41 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2010-01-01..2026-06-04 | refresh=False
+22:12:41 | INFO | Full fetch (refresh or empty file).
+22:12:41 | INFO | GET 2010-01-01..2010-12-26
+22:12:45 | INFO | GET 2010-12-27..2011-12-21
+22:12:50 | INFO | GET 2011-12-22..2012-12-15
+22:12:53 | INFO | GET 2012-12-16..2013-12-10
+22:12:55 | INFO | GET 2013-12-11..2014-12-05
+22:12:57 | INFO | GET 2014-12-06..2015-11-30
+22:13:08 | INFO | GET 2015-12-01..2016-11-24
+22:13:09 | INFO | GET 2016-11-25..2017-11-19
+22:13:10 | INFO | GET 2017-11-20..2018-11-14
+22:13:12 | INFO | GET 2018-11-15..2019-11-09
+22:13:13 | INFO | GET 2019-11-10..2020-11-03
+22:13:17 | INFO | GET 2020-11-04..2021-10-29
+22:13:26 | INFO | GET 2021-10-30..2022-10-24
+22:13:30 | INFO | GET 2022-10-25..2023-10-19
+22:13:34 | INFO | GET 2023-10-20..2024-10-13
+22:13:39 | INFO | GET 2024-10-14..2025-10-08
+22:13:43 | INFO | GET 2025-10-09..2026-06-04
+22:13:45 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\raw_eurpln_2010-01-01_2026-06-04.csv rows=4143
+22:13:45 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\raw_eurpln.csv rows=4143
+22:13:45 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\raw_eurpln.csv rows=4143
+22:13:45 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\eur_a.csv rows=4143
+22:13:45 | INFO | DONE fetch daily
+2026-06-04 22:13:45,824 | INFO | [fetch] OK in 65.23s
+2026-06-04 22:13:45,824 | INFO | [build_dataset] Attempt 1: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.build_dataset --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240
+2026-06-04 22:13:47,914 | INFO | [build_dataset] STDERR:
+2026-06-04 22:13:46,151 | INFO | START build_dataset | pair=eurpln | H=[1, 7, 30, 90, 180, 365]
+2026-06-04 22:13:46,151 | INFO | rolling_windows=[5, 10, 20, 60] | ema_spans=[10, 20]
+2026-06-04 22:13:46,151 | INFO | Znaleziono plik źródłowy: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\raw_eurpln.csv
+2026-06-04 22:13:46,169 | INFO | Source rows=4143 | range=2010-01-04..2026-06-03
+2026-06-04 22:13:46,169 | INFO | H=1 -> W=20
+2026-06-04 22:13:46,300 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4083 | cols=48 | W=20
+2026-06-04 22:13:46,301 | INFO | H=7 -> W=30
+2026-06-04 22:13:46,440 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H7.csv | rows=4077 | cols=58 | W=30
+2026-06-04 22:13:46,440 | INFO | H=30 -> W=60
+2026-06-04 22:13:46,658 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H30.csv | rows=4054 | cols=88 | W=60
+2026-06-04 22:13:46,658 | INFO | H=90 -> W=120
+2026-06-04 22:13:46,969 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H90.csv | rows=3934 | cols=148 | W=120
+2026-06-04 22:13:46,970 | INFO | H=180 -> W=180
+2026-06-04 22:13:47,371 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H180.csv | rows=3784 | cols=208 | W=180
+2026-06-04 22:13:47,371 | INFO | H=365 -> W=260
+2026-06-04 22:13:47,875 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H365.csv | rows=3519 | cols=288 | W=260
+2026-06-04 22:13:47,875 | INFO | Saved manifest: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\datasets_manifest.json
+2026-06-04 22:13:47,875 | INFO | DONE build_dataset
+2026-06-04 22:13:47,915 | INFO | [build_dataset] OK in 2.09s
+2026-06-04 22:13:47,915 | INFO | [train_eval] Attempt 1: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.train_eval --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240
