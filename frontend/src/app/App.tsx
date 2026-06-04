@@ -1,4 +1,13 @@
-// src/app/App.tsx
+import {
+  BarChart3,
+  BrainCircuit,
+  Database,
+  FileText,
+  LayoutDashboard,
+  Target,
+  TrendingUp,
+} from "lucide-react";
+
 import DashboardTab from "./components/DashboardTab";
 import DataTab from "./components/DataTab";
 import ForecastTab from "./components/ForecastTab";
@@ -9,81 +18,103 @@ import LogsTab from "./components/LogsTab";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 
+const tabs = [
+  { value: "summary", label: "Podsumowanie", icon: LayoutDashboard },
+  { value: "data", label: "Dane", icon: Database },
+  { value: "forecast", label: "Prognozy", icon: TrendingUp },
+  { value: "eval", label: "Ewaluacja", icon: BarChart3 },
+  { value: "errors", label: "Analiza błędów", icon: Target },
+  { value: "models", label: "Modele", icon: BrainCircuit },
+  { value: "logs", label: "Logi", icon: FileText },
+];
+
 export default function App() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* HEADER */}
-      <div className="px-6 pt-6 pb-4 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
-          €
-        </div>
-        <div className="text-xl font-semibold">Prognoza EUR/PLN</div>
-      </div>
+    <div className="app-shell min-h-screen text-white">
+      <div className="app-grid" />
 
-      {/* TABS */}
-      <div className="px-6 pb-10">
-        <Tabs defaultValue="summary" className="w-full">
-          <TabsList
-            className="
-              w-full justify-start gap-1
-              bg-white/5 border border-white/10
-              rounded-full p-1
-              backdrop-blur-xl shadow-xl
-            "
-          >
-            {[
-              { v: "summary", t: "Podsumowanie" },
-              { v: "data", t: "Dane" },
-              { v: "forecast", t: "Prognozy" },
-              { v: "eval", t: "Ewaluacja" },
-              { v: "errors", t: "Analiza błędów" },
-              { v: "models", t: "Modele" },
-              { v: "logs", t: "Logi" },
-            ].map((x) => (
-              <TabsTrigger
-                key={x.v}
-                value={x.v}
-                className="
-                  rounded-full px-5 py-2 text-sm
-                  text-gray-300
-                  hover:text-white hover:bg-white/5
-                  data-[state=active]:text-white
-                  data-[state=active]:bg-cyan-500/15
-                  data-[state=active]:border data-[state=active]:border-cyan-400/30
-                  data-[state=active]:shadow-[0_0_18px_rgba(34,211,238,0.35)]
-                  transition
-                "
-              >
-                {x.t}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <Tabs defaultValue="summary" className="relative z-10 w-full">
+        <header className="app-header">
+          <div className="app-header-inner">
+            <div className="app-brand-row">
+              <div className="app-logo" aria-hidden="true">
+                <div className="app-logo-orb">
+                  <span className="app-logo-euro">€</span>
 
-          <div className="mt-6">
-            <TabsContent value="summary">
-              <DashboardTab />
-            </TabsContent>
-            <TabsContent value="data">
-              <DataTab />
-            </TabsContent>
-            <TabsContent value="forecast">
-              <ForecastTab />
-            </TabsContent>
-            <TabsContent value="eval">
-              <ChartsTab />
-            </TabsContent>
-            <TabsContent value="errors">
-              <ModelErrorsTab />
-            </TabsContent>
-            <TabsContent value="models">
-              <ModelsTab />
-            </TabsContent>
-            <TabsContent value="logs">
-              <LogsTab />
-            </TabsContent>
+                  <svg
+                    className="app-logo-chart"
+                    viewBox="0 0 48 24"
+                    fill="none"
+                  >
+                    <path
+                      d="M3 17.5L11 13.5L18 15.5L27 7.5L35 10.5L45 4.5"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="27" cy="7.5" r="2.5" fill="currentColor" />
+                  </svg>
+                </div>
+              </div>
+
+              <div>
+                <h1 className="app-title">Prognoza EUR/PLN</h1>
+                <p className="app-subtitle">Panel predykcji kursu euro</p>
+              </div>
+            </div>
+
+            <div className="app-tabs-wrap">
+              <TabsList className="app-tabs-list">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+
+                  return (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="app-tab"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{tab.label}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </div>
           </div>
-        </Tabs>
-      </div>
+        </header>
+
+        <main className="app-main">
+          <TabsContent value="summary" className="app-tab-content">
+            <DashboardTab />
+          </TabsContent>
+
+          <TabsContent value="data" className="app-tab-content">
+            <DataTab />
+          </TabsContent>
+
+          <TabsContent value="forecast" className="app-tab-content">
+            <ForecastTab />
+          </TabsContent>
+
+          <TabsContent value="eval" className="app-tab-content">
+            <ChartsTab />
+          </TabsContent>
+
+          <TabsContent value="errors" className="app-tab-content">
+            <ModelErrorsTab />
+          </TabsContent>
+
+          <TabsContent value="models" className="app-tab-content">
+            <ModelsTab />
+          </TabsContent>
+
+          <TabsContent value="logs" className="app-tab-content">
+            <LogsTab />
+          </TabsContent>
+        </main>
+      </Tabs>
     </div>
   );
 }

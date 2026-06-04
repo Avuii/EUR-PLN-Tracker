@@ -2,80 +2,78 @@
 
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+  --background: #030712;
+  --foreground: #f8fafc;
+  --card: rgba(15, 23, 42, 0.78);
+  --card-foreground: #f8fafc;
+  --popover: #070b16;
+  --popover-foreground: #f8fafc;
+  --primary: #67e8f9;
+  --primary-foreground: #020617;
+  --secondary: rgba(30, 41, 59, 0.88);
+  --secondary-foreground: #e2e8f0;
+  --muted: rgba(30, 41, 59, 0.86);
+  --muted-foreground: #94a3b8;
+  --accent: rgba(34, 211, 238, 0.14);
+  --accent-foreground: #e0f2fe;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
+  --border: rgba(148, 163, 184, 0.16);
+  --input: rgba(15, 23, 42, 0.78);
+  --input-background: rgba(15, 23, 42, 0.78);
+  --switch-background: #334155;
+  --ring: #22d3ee;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --chart-1: #f59e0b;
+  --chart-2: #22d3ee;
+  --chart-3: #818cf8;
+  --chart-4: #34d399;
+  --chart-5: #fb7185;
+  --radius: 1rem;
+  --sidebar: #030712;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: rgba(30, 41, 59, 0.86);
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: rgba(148, 163, 184, 0.16);
+  --sidebar-ring: #22d3ee;
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #0a0a0a;
-  --card-foreground: #ffffff;
-  --popover: #0a0a0a;
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #ffffff;
-  --muted: #1a1a1a;
-  --muted-foreground: #a1a1aa;
-  --accent: #1a1a1a;
-  --accent-foreground: #ffffff;
-  --destructive: #ff4444;
+  --background: #030712;
+  --foreground: #f8fafc;
+  --card: rgba(15, 23, 42, 0.78);
+  --card-foreground: #f8fafc;
+  --popover: #070b16;
+  --popover-foreground: #f8fafc;
+  --primary: #67e8f9;
+  --primary-foreground: #020617;
+  --secondary: rgba(30, 41, 59, 0.88);
+  --secondary-foreground: #e2e8f0;
+  --muted: rgba(30, 41, 59, 0.86);
+  --muted-foreground: #94a3b8;
+  --accent: rgba(34, 211, 238, 0.14);
+  --accent-foreground: #e0f2fe;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #3b82f6;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: #00d4ff;
-  --chart-2: #ff00ff;
-  --chart-3: #00ff88;
-  --chart-4: #ff6b35;
-  --chart-5: #ffee00;
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #3b82f6;
+  --border: rgba(148, 163, 184, 0.16);
+  --input: rgba(15, 23, 42, 0.78);
+  --ring: #22d3ee;
+  --chart-1: #f59e0b;
+  --chart-2: #22d3ee;
+  --chart-3: #818cf8;
+  --chart-4: #34d399;
+  --chart-5: #fb7185;
+  --sidebar: #030712;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: rgba(30, 41, 59, 0.86);
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: rgba(148, 163, 184, 0.16);
+  --sidebar-ring: #22d3ee;
   --radius: 1rem;
 }
 
@@ -120,63 +118,874 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #030712;
+  color: #f8fafc;
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 18% -12%, rgba(34, 211, 238, 0.15), transparent 32rem),
+    radial-gradient(circle at 86% 0%, rgba(99, 102, 241, 0.16), transparent 34rem),
+    linear-gradient(180deg, #030712 0%, #050816 45%, #030712 100%);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+input,
+[role="combobox"] {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+input:focus,
+[role="combobox"]:focus,
+[data-radix-select-trigger][data-state="open"] {
+  border-color: rgba(34, 211, 238, 0.48) !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.18),
+    0 0 24px rgba(34, 211, 238, 0.08) !important;
+  outline: none !important;
+}
+
+input[type="checkbox"] {
+  accent-color: #22d3ee;
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.32);
+  color: #ffffff;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.55);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.24);
+  border: 2px solid rgba(3, 7, 18, 0.75);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.38);
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% -8%, rgba(34, 211, 238, 0.13), transparent 34rem),
+    radial-gradient(circle at 85% 0%, rgba(99, 102, 241, 0.14), transparent 34rem),
+    linear-gradient(180deg, #030712 0%, #050816 48%, #030712 100%);
+}
+
+.app-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.app-container {
+  width: min(100% - 2rem, 1320px);
+  margin-inline: auto;
+}
+
+.app-header {
+  position: relative;
+  z-index: 10;
+  padding: 1.7rem 0 1.35rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(3, 7, 18, 0.78);
+  backdrop-filter: blur(22px);
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.app-logo {
+  display: flex;
+  width: 3.45rem;
+  height: 3.45rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(103, 232, 249, 0.26);
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.44), transparent 30%),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.78), rgba(59, 130, 246, 0.48) 55%, rgba(124, 58, 237, 0.5));
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  box-shadow:
+    0 0 34px rgba(34, 211, 238, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.app-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.2vw, 2rem);
+  line-height: 1.1;
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  color: #f8fafc;
+}
+
+.app-tabs-wrap {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 1.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.1rem;
+}
+
+.app-tabs-list {
+  display: grid !important;
+  width: min(100%, 1080px) !important;
+  height: auto !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.33rem !important;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.58) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 48px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px);
+}
+
+.app-tab {
+  display: inline-flex !important;
+  height: auto !important;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: rgba(203, 213, 225, 0.76) !important;
+  font-size: 0.86rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.app-tab:hover {
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  transform: translateY(-1px);
+}
+
+.app-tab[data-state="active"] {
+  color: #ffffff !important;
+  border-color: rgba(103, 232, 249, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(59, 130, 246, 0.12)) !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.04),
+    0 0 22px rgba(34, 211, 238, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-tab[data-state="active"] svg {
+  color: #67e8f9;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.42));
+}
+
+.app-main {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2rem, 1500px);
+  margin-inline: auto;
+  padding: 2rem 0 3rem;
+}
+
+.app-tab-content {
+  margin-top: 0 !important;
+  outline: none !important;
+}
+
+.app-page {
+  width: 100%;
+}
+
+.app-card {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
+    rgba(15, 23, 42, 0.72) !important;
+  box-shadow:
+    0 18px 56px rgba(0, 0, 0, 0.23),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+  backdrop-filter: blur(18px);
+}
+
+.app-panel {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(3, 7, 18, 0.34);
+  border-radius: 1.15rem;
+}
+
+.app-kpi {
+  border: 1px solid rgba(148, 163, 184, 0.13) !important;
+  border-radius: 1.35rem !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)),
+    rgba(15, 23, 42, 0.66) !important;
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.app-input,
+.app-select-trigger {
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  background: rgba(3, 7, 18, 0.34) !important;
+  color: #f8fafc !important;
+  border-radius: 0.9rem !important;
+}
+
+.app-button {
+  border-radius: 999px !important;
+  border: 1px solid rgba(103, 232, 249, 0.18) !important;
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(59, 130, 246, 0.2)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 34px rgba(34, 211, 238, 0.08) !important;
+}
+
+.app-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px rgba(34, 211, 238, 0.13) !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: #94a3b8 !important;
+}
+
+.recharts-default-legend {
+  color: #cbd5e1 !important;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+@media (max-width: 1100px) {
+  .app-tabs-list {
+    display: flex !important;
+    width: max-content !important;
+    min-width: max-content !important;
+    justify-content: flex-start;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  .app-tab {
+    min-width: 8.6rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    padding-top: 1.2rem;
   }
 
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
-
-  html {
-    font-size: var(--font-size);
+  .app-brand {
+    justify-content: flex-start;
   }
 
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  .app-logo {
+    width: 3rem;
+    height: 3rem;
   }
 
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  .app-tabs-wrap {
+    justify-content: flex-start;
   }
 
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  .app-main {
+    width: min(100% - 1rem, 1500px);
+    padding-top: 1rem;
+  }
+}
+.app-header {
+  position: relative !important;
+  z-index: 20 !important;
+  width: 100% !important;
+  padding: 1.35rem 0 1.2rem !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+  background:
+    linear-gradient(180deg, rgba(3, 7, 18, 0.92), rgba(3, 7, 18, 0.78)) !important;
+  backdrop-filter: blur(22px) !important;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28) !important;
+}
+
+.app-header-inner {
+  width: min(100% - 3rem, 1540px) !important;
+  margin-inline: auto !important;
+}
+
+.app-brand-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1rem !important;
+  width: 100% !important;
+}
+
+.app-logo {
+  display: flex !important;
+  width: 3.35rem !important;
+  height: 3.35rem !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(103, 232, 249, 0.26) !important;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.42), transparent 30%),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.72), rgba(59, 130, 246, 0.48) 55%, rgba(124, 58, 237, 0.5)) !important;
+  color: #ffffff !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.04em !important;
+  box-shadow:
+    0 0 34px rgba(34, 211, 238, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+.app-title {
+  margin: 0 !important;
+  color: #f8fafc !important;
+  font-size: clamp(1.65rem, 2.2vw, 2.25rem) !important;
+  line-height: 1.05 !important;
+  font-weight: 780 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.app-subtitle {
+  margin: 0.35rem 0 0 !important;
+  color: rgba(148, 163, 184, 0.8) !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.app-tabs-wrap {
+  display: flex !important;
+  width: 100% !important;
+  margin-top: 1.25rem !important;
+  overflow-x: auto !important;
+  padding-bottom: 0.05rem !important;
+}
+
+.app-tabs-list {
+  display: grid !important;
+  width: 100% !important;
+  height: auto !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 0.28rem !important;
+  padding: 0.34rem !important;
+  border-radius: 1.35rem !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.62)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 18px 48px rgba(0, 0, 0, 0.24) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.app-tab {
+  display: inline-flex !important;
+  height: 2.7rem !important;
+  min-width: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0 0.7rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: rgba(203, 213, 225, 0.72) !important;
+  font-size: 0.88rem !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.015em !important;
+  white-space: nowrap !important;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease !important;
+}
+
+.app-tab:hover {
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  transform: translateY(-1px) !important;
+}
+
+.app-tab[data-state="active"] {
+  color: #ffffff !important;
+  border-color: rgba(103, 232, 249, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.17), rgba(59, 130, 246, 0.12)) !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.04),
+    0 0 22px rgba(34, 211, 238, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.app-tab[data-state="active"] svg {
+  color: #67e8f9 !important;
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.42)) !important;
+}
+
+.app-main {
+  width: min(100% - 3rem, 1540px) !important;
+  margin-inline: auto !important;
+  padding: 2rem 0 3rem !important;
+}
+
+@media (max-width: 1100px) {
+  .app-header-inner {
+    width: min(100% - 1.5rem, 1540px) !important;
   }
 
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  .app-tabs-list {
+    display: flex !important;
+    width: max-content !important;
+    min-width: max-content !important;
   }
 
-  label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  .app-tab {
+    min-width: 8.4rem !important;
   }
 
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+  .app-tabs-wrap {
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-brand-row {
+    align-items: flex-start !important;
   }
 
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
+  .app-logo {
+    width: 3rem !important;
+    height: 3rem !important;
   }
+
+  .app-title {
+    font-size: 1.55rem !important;
+  }
+
+  .app-subtitle {
+    font-size: 0.8rem !important;
+  }
+
+  .app-main {
+    width: min(100% - 1rem, 1540px) !important;
+    padding-top: 1rem !important;
+  }
+}
+.app-shell {
+  background:
+    radial-gradient(circle at 16% -10%, rgba(34, 211, 238, 0.1), transparent 34rem),
+    radial-gradient(circle at 86% -8%, rgba(99, 102, 241, 0.1), transparent 34rem),
+    linear-gradient(180deg, #030712 0%, #050816 48%, #030712 100%) !important;
+}
+
+.app-grid {
+  opacity: 0.16 !important;
+}
+
+.app-header {
+  padding: 1.35rem 0 1.15rem !important;
+  background: rgba(3, 7, 18, 0.86) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+  box-shadow: none !important;
+}
+
+.app-header-inner {
+  width: min(100% - 3rem, 1540px) !important;
+  margin-inline: auto !important;
+}
+
+.app-brand-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1rem !important;
+}
+
+.app-logo {
+  width: 3.15rem !important;
+  height: 3.15rem !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(103, 232, 249, 0.22) !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.42), transparent 30%),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.68), rgba(59, 130, 246, 0.42) 55%, rgba(124, 58, 237, 0.46)) !important;
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.12) !important;
+}
+
+.app-title {
+  font-size: clamp(1.5rem, 2vw, 2rem) !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.app-subtitle {
+  margin-top: 0.25rem !important;
+  font-size: 0.82rem !important;
+  color: rgba(148, 163, 184, 0.72) !important;
+}
+
+.app-tabs-wrap {
+  width: 100% !important;
+  margin-top: 1.25rem !important;
+  justify-content: stretch !important;
+}
+
+.app-tabs-list {
+  width: 100% !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  border-radius: 1.1rem !important;
+  border: 1px solid rgba(148, 163, 184, 0.13) !important;
+  background: rgba(15, 23, 42, 0.48) !important;
+  box-shadow: none !important;
+}
+
+.app-tab {
+  height: 2.55rem !important;
+  border-radius: 0.85rem !important;
+  color: rgba(203, 213, 225, 0.66) !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+}
+
+.app-tab:hover {
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: rgba(248, 250, 252, 0.95) !important;
+}
+
+.app-tab[data-state="active"] {
+  border-color: rgba(103, 232, 249, 0.22) !important;
+  background: rgba(34, 211, 238, 0.1) !important;
+  color: #f8fafc !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 20px rgba(34, 211, 238, 0.08) !important;
+}
+
+.app-main {
+  width: min(100% - 3rem, 1540px) !important;
+  padding-top: 1.6rem !important;
+}
+
+.app-card,
+.app-kpi {
+  border: 1px solid rgba(148, 163, 184, 0.11) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    rgba(15, 23, 42, 0.62) !important;
+  box-shadow: none !important;
+}
+
+.app-card:hover,
+.app-kpi:hover {
+  border-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+@media (max-width: 1100px) {
+  .app-tabs-list {
+    display: flex !important;
+    width: max-content !important;
+    min-width: max-content !important;
+  }
+
+  .app-tab {
+    min-width: 8.4rem !important;
+  }
+}
+:root {
+  --glass-bg:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.045), rgba(99, 102, 241, 0.035)),
+    rgba(8, 13, 28, 0.38);
+
+  --glass-bg-soft:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.035), rgba(99, 102, 241, 0.025)),
+    rgba(8, 13, 28, 0.28);
+
+  --glass-bg-hover:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.075), rgba(99, 102, 241, 0.055)),
+    rgba(10, 18, 38, 0.46);
+
+  --glass-border: rgba(125, 211, 252, 0.13);
+  --glass-border-hover: rgba(103, 232, 249, 0.28);
+
+  --glass-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(125, 211, 252, 0.08);
+}
+
+.app-shell {
+  background:
+    radial-gradient(circle at 14% -10%, rgba(34, 211, 238, 0.16), transparent 34rem),
+    radial-gradient(circle at 88% 0%, rgba(99, 102, 241, 0.18), transparent 36rem),
+    radial-gradient(circle at 50% 110%, rgba(14, 165, 233, 0.08), transparent 36rem),
+    linear-gradient(180deg, #020617 0%, #030712 48%, #020617 100%) !important;
+}
+
+.app-grid {
+  opacity: 0.14 !important;
+}
+
+.app-header {
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.66), rgba(2, 6, 23, 0.38)) !important;
+  border-bottom: 1px solid rgba(125, 211, 252, 0.08) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(28px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(155%) !important;
+}
+
+.app-tabs-list {
+  background: var(--glass-bg-soft) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(125, 211, 252, 0.08) !important;
+  backdrop-filter: blur(28px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(165%) !important;
+}
+
+.app-tab {
+  background: transparent !important;
+}
+
+.app-tab:hover {
+  background: rgba(34, 211, 238, 0.055) !important;
+}
+
+.app-tab[data-state="active"] {
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.16), rgba(59, 130, 246, 0.075)),
+    rgba(8, 13, 28, 0.34) !important;
+  border-color: rgba(103, 232, 249, 0.32) !important;
+  box-shadow:
+    0 0 26px rgba(34, 211, 238, 0.13),
+    inset 0 1px 0 rgba(103, 232, 249, 0.14) !important;
+}
+
+.app-card,
+.app-kpi,
+.app-panel,
+.app-page .rounded-3xl,
+.app-page .rounded-2xl,
+.app-page .rounded-xl {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  backdrop-filter: blur(30px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(165%) !important;
+}
+
+.app-card::before,
+.app-kpi::before,
+.app-panel::before,
+.app-page .rounded-3xl::before,
+.app-page .rounded-2xl::before,
+.app-page .rounded-xl::before {
+  background: none !important;
+  opacity: 0 !important;
+}
+
+.app-card:hover,
+.app-kpi:hover,
+.app-panel:hover,
+.app-page .rounded-3xl:hover,
+.app-page .rounded-2xl:hover,
+.app-page .rounded-xl:hover {
+  background: var(--glass-bg-hover) !important;
+  border-color: var(--glass-border-hover) !important;
+  box-shadow:
+    0 28px 84px rgba(0, 0, 0, 0.34),
+    0 0 30px rgba(34, 211, 238, 0.075),
+    inset 0 1px 0 rgba(103, 232, 249, 0.13) !important;
+}
+
+.app-input,
+.app-select-trigger,
+input,
+[role="combobox"] {
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.025), rgba(99, 102, 241, 0.018)),
+    rgba(3, 7, 18, 0.38) !important;
+  border: 1px solid rgba(125, 211, 252, 0.12) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(125, 211, 252, 0.07),
+    0 12px 30px rgba(0, 0, 0, 0.18) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+}
+
+.app-button,
+button:not([role="tab"]) {
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.13), rgba(59, 130, 246, 0.08)),
+    rgba(8, 13, 28, 0.36) !important;
+  border: 1px solid rgba(103, 232, 249, 0.22) !important;
+  box-shadow:
+    0 18px 48px rgba(34, 211, 238, 0.08),
+    inset 0 1px 0 rgba(103, 232, 249, 0.13) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+}
+
+pre {
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.02), rgba(99, 102, 241, 0.014)),
+    rgba(2, 6, 23, 0.34) !important;
+  border-color: rgba(125, 211, 252, 0.1) !important;
+  backdrop-filter: blur(24px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+}
+
+.app-page th {
+  background: rgba(2, 6, 23, 0.28) !important;
+}
+
+.app-page td {
+  background: rgba(8, 13, 28, 0.16) !important;
+}
+.app-logo {
+  position: relative !important;
+  width: 3.65rem !important;
+  height: 3.65rem !important;
+  padding: 0 !important;
+  border-radius: 1.25rem !important;
+  border: 1px solid rgba(125, 211, 252, 0.18) !important;
+  background:
+    linear-gradient(135deg, rgba(34, 211, 238, 0.09), rgba(99, 102, 241, 0.08)),
+    rgba(8, 13, 28, 0.42) !important;
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.26),
+    0 0 34px rgba(34, 211, 238, 0.12),
+    inset 0 1px 0 rgba(125, 211, 252, 0.13) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  overflow: hidden !important;
+}
+
+.app-logo::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(125, 211, 252, 0.34), transparent 26%),
+    radial-gradient(circle at 72% 78%, rgba(99, 102, 241, 0.28), transparent 30%);
+  opacity: 0.9;
+}
+
+.app-logo::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 1.18rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent 38%),
+    linear-gradient(315deg, rgba(34, 211, 238, 0.08), transparent 48%);
+  pointer-events: none;
+}
+
+.app-logo-orb {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+
+.app-logo-euro {
+  position: absolute;
+  top: 0.58rem;
+  left: 0.72rem;
+  color: rgba(248, 250, 252, 0.96);
+  font-size: 1.2rem;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-shadow: 0 0 18px rgba(34, 211, 238, 0.28);
+}
+
+.app-logo-chart {
+  position: absolute;
+  right: 0.48rem;
+  bottom: 0.55rem;
+  width: 2.15rem;
+  height: 1.25rem;
+  color: #67e8f9;
+  filter: drop-shadow(0 0 9px rgba(34, 211, 238, 0.48));
+  opacity: 0.95;
+}
+
+.app-logo:hover {
+  border-color: rgba(103, 232, 249, 0.32) !important;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.32),
+    0 0 42px rgba(34, 211, 238, 0.18),
+    inset 0 1px 0 rgba(125, 211, 252, 0.18) !important;
 }

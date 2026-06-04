@@ -10,16 +10,21 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-
       '@': path.resolve(__dirname, './src'),
     },
   },
   server: {
-  port: 4000,
-  proxy: {
-    "/api": "http://127.0.0.1:8000",
+    host: '127.0.0.1',
+    port: 4200,
+    strictPort: true,
+    proxy: {
+      '/api': 'http://127.0.0.1:8000',
+    },
   },
-},
-
+  preview: {
+    host: '127.0.0.1',
+    port: 4200,
+    strictPort: true,
+  },
   assetsInclude: ['**/*.svg', '**/*.csv'],
 })

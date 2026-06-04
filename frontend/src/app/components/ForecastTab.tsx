@@ -1,23 +1,12 @@
-// src/components/ForecastTab.tsx
 import { useEffect, useMemo, useState } from "react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  Area,
-  CartesianGrid,
-} from "recharts";
-
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { api, ForecastRow } from "../lib/api";
 import { yDomainFromData } from "../lib/chartDomain";
 
-type ModelKeyOption = { key: string; label: string };
+const HORIZONS = [1, 7, 30, 90, 180, 365];
+const PREFERRED_MODELS = ["best_value", "naive", "sma", "ema", "ridge", "elastic", "rf", "extra", "hgb", "sarimax", "mlp", "xgb", "lgbm"];
 
 function isNumberLike(v: any) {
   return typeof v === "number" && Number.isFinite(v);
@@ -30,50 +19,49 @@ function formatNum(v: any) {
   return n.toFixed(4).replace(".", ",");
 }
 
+function fmtDate(v: any) {
+  if (!v) return "—";
+  return String(v).slice(0, 10);
+}
+
 function prettyModelLabel(key: string) {
   const map: Record<string, string> = {
+    best_value: "Best model",
     baseline: "Baseline",
+    naive: "Naive",
+    sma: "SMA",
+    ema: "EMA",
     ridge: "Ridge",
+    elastic: "ElasticNet",
     rf: "RandomForest",
     extra: "ExtraTrees",
     hgb: "HistGB",
-    et: "ExtraTrees (et)",
-    best_value: "Best model",
-    p80_low: "p80_low",
-    p80_high: "p80_high",
-    p95_low: "p95_low",
-    p95_high: "p95_high",
+    sarimax: "SARIMAX",
+    mlp: "MLPRegressor",
+    xgb: "XGBoost",
+    lgbm: "LightGBM",
   };
-
   return map[key] ?? key;
 }
 
 export default function ForecastTab() {
-  const horizonOptions = [7, 30, 90, 180, 365];
-
   const [horizon, setHorizon] = useState<number>(30);
-  const [mode, setMode] = useState<"direct" | "iterative">("direct");
   const [rows, setRows] = useState<ForecastRow[]>([]);
-  const [modelKey, setModelKey] = useState<string>("rf");
+  const [modelKey, setModelKey] = useState<string>("best_value");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-
     (async () => {
       setLoading(true);
       setErr(null);
-
       try {
         const r = await api.forecast(horizon);
         if (!alive) return;
-
         setRows(r);
-
         const keys = Object.keys(r?.[0] ?? {});
-        const preferred = ["best_value", "rf", "ridge", "baseline", "extra", "hgb", "et"];
-        const found = preferred.find((k) => keys.includes(k));
+        const found = PREFERRED_MODELS.find((k) => keys.includes(k) && r.some((row) => isNumberLike(row[k])));
         if (found) setModelKey(found);
       } catch (e: any) {
         if (!alive) return;
@@ -84,250 +72,146 @@ export default function ForecastTab() {
         setLoading(false);
       }
     })();
-
     return () => {
       alive = false;
     };
   }, [horizon]);
 
-  const modelOptions: ModelKeyOption[] = useMemo(() => {
-    if (!rows.length) return [];
+  const bestRow = rows[0] ?? null;
 
-    const sample = rows[0];
-    const keys = Object.keys(sample);
-
-    const blacklist = new Set(["date", "best_model"]);
-    const numericKeys = keys.filter((k) => !blacklist.has(k) && rows.some((r) => isNumberLike(r[k])));
-
-    const ordered = [
-      "best_value",
-      "rf",
-      "ridge",
-      "baseline",
-      "extra",
-      "hgb",
-      "et",
-      ...numericKeys.filter((k) => !["best_value", "rf", "ridge", "baseline", "extra", "hgb", "et"].includes(k)),
-    ].filter((k, i, a) => numericKeys.includes(k) && a.indexOf(k) === i);
-
+  const modelOptions = useMemo(() => {
+    if (!bestRow) return [];
+    const blacklist = new Set(["date", "best_model", "forecast_target_date", "latest_observation_date", "latest_value", "H", "p80_low", "p80_high", "p95_low", "p95_high"]);
+    const numericKeys = Object.keys(bestRow).filter((k) => !blacklist.has(k) && isNumberLike(bestRow[k]));
+    const ordered = [...PREFERRED_MODELS, ...numericKeys.filter((k) => !PREFERRED_MODELS.includes(k))].filter(
+      (k, i, arr) => numericKeys.includes(k) && arr.indexOf(k) === i
+    );
     return ordered.map((k) => ({ key: k, label: prettyModelLabel(k) }));
-  }, [rows]);
+  }, [bestRow]);
 
-  const selectedModelLabel = useMemo(() => prettyModelLabel(modelKey), [modelKey]);
+  useEffect(() => {
+    if (modelOptions.length && !modelOptions.some((o) => o.key === modelKey)) {
+      setModelKey(modelOptions[0].key);
+    }
+  }, [modelOptions, modelKey]);
 
   const chartData = useMemo(() => {
-    return rows.map((r) => ({
-      ...r,
-      date: String(r.date),
-      baseline: r.baseline ?? null,
-      selected: r[modelKey] ?? null,
-      p80_low: r.p80_low ?? null,
-      p80_high: r.p80_high ?? null,
-      p95_low: r.p95_low ?? null,
-      p95_high: r.p95_high ?? null,
-    }));
-  }, [rows, modelKey]);
+    if (!bestRow) return [];
+    return modelOptions
+      .filter((m) => m.key !== "best_value")
+      .map((m) => ({ model: m.label, value: bestRow[m.key] }));
+  }, [bestRow, modelOptions]);
 
-  const yDomain = useMemo(() => {
-    return yDomainFromData(chartData, ["baseline", "selected", "p95_low", "p95_high"], 0.08, 0.01);
-  }, [chartData]);
+  const yDomain = useMemo(() => yDomainFromData(chartData, ["value"], 0.06, 0.01), [chartData]);
+  const selectedLabel = prettyModelLabel(modelKey);
+  const selectedValue = bestRow?.[modelKey] ?? null;
+  const latestValue = bestRow?.latest_value ?? null;
+  const forecastChange = isNumberLike(selectedValue) && isNumberLike(latestValue) ? Number(selectedValue) - Number(latestValue) : null;
 
   return (
-    <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 rounded-2xl backdrop-blur-xl shadow-xl">
+    <div className="app-page space-y-6">
+      <Card className="app-card rounded-3xl">
         <CardHeader className="pb-2">
-          <CardTitle className="text-white text-xl">Prognozy</CardTitle>
+          <CardTitle className="text-2xl text-white">Prognozy</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <CardContent className="space-y-5">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr]">
             <div>
-              <div className="text-sm mb-1 text-gray-300">Horyzont (dni robocze)</div>
+              <div className="mb-1 text-sm text-slate-300">Horyzont</div>
               <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v))}>
-                <SelectTrigger className="bg-black/30 border-white/10 text-white">
-                  <SelectValue placeholder="Wybierz horyzont" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#0b0f19] border-white/10 text-white">
-                  {horizonOptions.map((h) => (
-                    <SelectItem key={h} value={String(h)}>
-                      {h} dni
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <div className="text-sm mb-1 text-gray-300">Model</div>
-              <Select value={modelKey} onValueChange={setModelKey}>
-                <SelectTrigger className="bg-black/30 border-white/10 text-white">
-                  <SelectValue placeholder="Wybierz model" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#0b0f19] border-white/10 text-white">
-                  {modelOptions.map((o) => (
-                    <SelectItem key={o.key} value={o.key}>
-                      {o.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <div className="text-sm mb-1 text-gray-300">Tryb prognozy</div>
-              <Select value={mode} onValueChange={(v) => setMode(v as "direct" | "iterative")}>
-                <SelectTrigger className="bg-black/30 border-white/10 text-white">
+                <SelectTrigger className="app-select-trigger h-11">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#0b0f19] border-white/10 text-white">
-                  <SelectItem value="direct">Direct</SelectItem>
-                  <SelectItem value="iterative">Iterative</SelectItem>
+                <SelectContent className="border-white/10 bg-[#070b16] text-white">
+                  {HORIZONS.map((h) => <SelectItem key={h} value={String(h)}>H={h}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-end">
-              <div className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-gray-300">
-                Im dalej w przyszłość, tym większa niepewność prognozy.
-              </div>
+            <div>
+              <div className="mb-1 text-sm text-slate-300">Model</div>
+              <Select value={modelKey} onValueChange={setModelKey}>
+                <SelectTrigger className="app-select-trigger h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#070b16] text-white">
+                  {modelOptions.map((o) => <SelectItem key={o.key} value={o.key}>{o.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="app-kpi p-4">
+              <div className="text-xs uppercase tracking-wider text-slate-400">Data prognozy</div>
+              <div className="mt-2 text-xl font-semibold text-white">{fmtDate(bestRow?.date ?? bestRow?.forecast_target_date)}</div>
+            </div>
+
+            <div className="app-kpi p-4">
+              <div className="text-xs uppercase tracking-wider text-slate-400">Prognoza</div>
+              <div className="mt-2 text-xl font-semibold text-white">{formatNum(selectedValue)} zł</div>
             </div>
           </div>
 
-          {err && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-3 text-sm text-red-200">
+          {err ? (
+            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
               Błąd: {err}
             </div>
-          )}
+          ) : null}
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-xs text-gray-400 uppercase tracking-wider">Horyzont</div>
-              <div className="mt-2 text-white text-xl font-semibold">{horizon} dni</div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <div className="app-kpi p-5">
+              <div className="text-xs uppercase tracking-wider text-slate-400">Wybrany model</div>
+              <div className="mt-3 text-2xl font-semibold text-white">{selectedLabel}</div>
             </div>
-
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-xs text-gray-400 uppercase tracking-wider">Model</div>
-              <div className="mt-2 text-white text-xl font-semibold">{selectedModelLabel}</div>
+            <div className="app-kpi p-5">
+              <div className="text-xs uppercase tracking-wider text-slate-400">Ostatni kurs</div>
+              <div className="mt-3 text-2xl font-semibold text-white">{formatNum(latestValue)} zł</div>
             </div>
-
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-xs text-gray-400 uppercase tracking-wider">Tryb</div>
-              <div className="mt-2 text-white text-xl font-semibold capitalize">{mode}</div>
+            <div className="app-kpi p-5">
+              <div className="text-xs uppercase tracking-wider text-slate-400">Zmiana prognozowana</div>
+              <div className={`mt-3 text-2xl font-semibold ${forecastChange != null && forecastChange < 0 ? "text-red-300" : "text-emerald-300"}`}>{formatNum(forecastChange)} zł</div>
             </div>
-
-            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div className="text-xs text-gray-400 uppercase tracking-wider">Punktów prognozy</div>
-              <div className="mt-2 text-white text-xl font-semibold">{rows.length}</div>
+            <div className="app-kpi p-5">
+              <div className="text-xs uppercase tracking-wider text-slate-400">Best model</div>
+              <div className="mt-3 text-2xl font-semibold text-white">{String(bestRow?.best_model ?? "—")}</div>
             </div>
           </div>
 
-          <div className="h-[420px] w-full rounded-2xl border border-white/10 bg-black/20 p-2">
+          <div className="app-panel h-[380px] w-full p-3">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 18, right: 18, left: 10, bottom: 10 }}>
+              <BarChart data={chartData} margin={{ top: 16, right: 18, left: 8, bottom: 16 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#9ca3af" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
-                <YAxis domain={yDomain} tick={{ fontSize: 12, fill: "#9ca3af" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#111827",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "12px",
-                    color: "#fff",
-                  }}
-                  formatter={(val: any, name: any) => [formatNum(val), String(name)]}
-                  labelFormatter={(l) => `Data: ${l}`}
-                />
-                <Legend wrapperStyle={{ color: "#e5e7eb" }} />
-
-                <Area type="monotone" dataKey="p95_high" stroke="none" fillOpacity={0} />
-                <Area type="monotone" dataKey="p95_low" stroke="none" fillOpacity={0} />
-                <Area
-                  type="monotone"
-                  dataKey="p95_high"
-                  stroke="none"
-                  fillOpacity={0.08}
-                  fill="#94a3b8"
-                  name="CI 95%"
-                />
-
-                <Area type="monotone" dataKey="p80_high" stroke="none" fillOpacity={0} />
-                <Area type="monotone" dataKey="p80_low" stroke="none" fillOpacity={0} />
-                <Area
-                  type="monotone"
-                  dataKey="p80_high"
-                  stroke="none"
-                  fillOpacity={0.12}
-                  fill="#cbd5e1"
-                  name="CI 80%"
-                />
-
-                <Line type="monotone" dataKey="baseline" dot={false} strokeWidth={2} stroke="#94a3b8" name="Baseline" />
-                <Line type="monotone" dataKey="selected" dot={false} strokeWidth={2.4} stroke="#22d3ee" name={selectedModelLabel} />
-              </LineChart>
+                <XAxis dataKey="model" tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
+                <YAxis domain={yDomain} tickFormatter={(v) => formatNum(v)} width={78} tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#070b16", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", color: "#fff" }} formatter={(val: any) => [formatNum(val), "Prognoza"]} />
+                <Bar dataKey="value" name="Prognoza" fill="#22d3ee" radius={[10, 10, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/20">
-            <div className="px-4 py-3 text-sm font-medium border-b border-white/10 bg-black/30 text-white">
-              Tabela prognozy ({horizon} dni)
-            </div>
-
-            <div className="max-h-[360px] overflow-auto">
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+            <div className="border-b border-white/10 bg-black/30 px-4 py-3 text-sm font-medium text-white">Wartości modeli dla H={horizon}</div>
+            <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-black/60 backdrop-blur-xl">
+                <thead className="bg-black/60">
                   <tr className="text-left">
-                    <th className="px-3 py-2 border-b border-white/10 text-gray-300">Data</th>
-                    <th className="px-3 py-2 border-b border-white/10 text-gray-300">Baseline</th>
-                    <th className="px-3 py-2 border-b border-white/10 text-gray-300">{selectedModelLabel}</th>
-                    <th className="px-3 py-2 border-b border-white/10 text-gray-300">p80</th>
-                    <th className="px-3 py-2 border-b border-white/10 text-gray-300">p95</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Model</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Wartość</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && (
-                    <tr>
-                      <td className="px-3 py-3 text-gray-400" colSpan={5}>
-                        Ładowanie…
-                      </td>
+                  {loading ? <tr><td className="px-3 py-3 text-slate-400" colSpan={2}>Ładowanie…</td></tr> : null}
+                  {!loading && !modelOptions.length ? <tr><td className="px-3 py-3 text-slate-400" colSpan={2}>Brak danych prognozy. Uruchom pipeline.</td></tr> : null}
+                  {!loading && modelOptions.map((m) => (
+                    <tr key={m.key} className="border-t border-white/5 hover:bg-white/5">
+                      <td className="px-3 py-2 text-white">{m.label}</td>
+                      <td className="px-3 py-2 font-mono text-white">{formatNum(bestRow?.[m.key])}</td>
                     </tr>
-                  )}
-
-                  {!loading && !rows.length && !err && (
-                    <tr>
-                      <td className="px-3 py-3 text-gray-400" colSpan={5}>
-                        Brak danych prognozy.
-                      </td>
-                    </tr>
-                  )}
-
-                  {!loading &&
-                    rows.map((r, idx) => (
-                      <tr key={idx} className="border-t border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="px-3 py-2 text-white font-mono">{String(r.date)}</td>
-                        <td className="px-3 py-2 text-white font-mono">{formatNum(r.baseline)}</td>
-                        <td className="px-3 py-2 text-white font-mono">{formatNum(r[modelKey])}</td>
-                        <td className="px-3 py-2 text-gray-300 font-mono">
-                          {r.p80_low == null || r.p80_high == null
-                            ? "—"
-                            : `${formatNum(r.p80_low)} – ${formatNum(r.p80_high)}`}
-                        </td>
-                        <td className="px-3 py-2 text-gray-300 font-mono">
-                          {r.p95_low == null || r.p95_high == null
-                            ? "—"
-                            : `${formatNum(r.p95_low)} – ${formatNum(r.p95_high)}`}
-                        </td>
-                      </tr>
-                    ))}
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
-
-          {mode === "iterative" && (
-            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-3 py-3 text-sm text-yellow-100">
-              Tryb iterative: jeśli backend nie generuje osobnych forecastów iterative, UI pokaże dane z ostatniego runa.
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

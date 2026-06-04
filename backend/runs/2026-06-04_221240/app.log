@@ -1,0 +1,67 @@
+2026-06-04 22:13:46,151 | INFO | START build_dataset | pair=eurpln | H=[1, 7, 30, 90, 180, 365]
+2026-06-04 22:13:46,151 | INFO | rolling_windows=[5, 10, 20, 60] | ema_spans=[10, 20]
+2026-06-04 22:13:46,151 | INFO | Znaleziono plik źródłowy: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\raw_eurpln.csv
+2026-06-04 22:13:46,169 | INFO | Source rows=4143 | range=2010-01-04..2026-06-03
+2026-06-04 22:13:46,169 | INFO | H=1 -> W=20
+2026-06-04 22:13:46,300 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4083 | cols=48 | W=20
+2026-06-04 22:13:46,301 | INFO | H=7 -> W=30
+2026-06-04 22:13:46,440 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H7.csv | rows=4077 | cols=58 | W=30
+2026-06-04 22:13:46,440 | INFO | H=30 -> W=60
+2026-06-04 22:13:46,658 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H30.csv | rows=4054 | cols=88 | W=60
+2026-06-04 22:13:46,658 | INFO | H=90 -> W=120
+2026-06-04 22:13:46,969 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H90.csv | rows=3934 | cols=148 | W=120
+2026-06-04 22:13:46,970 | INFO | H=180 -> W=180
+2026-06-04 22:13:47,371 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H180.csv | rows=3784 | cols=208 | W=180
+2026-06-04 22:13:47,371 | INFO | H=365 -> W=260
+2026-06-04 22:13:47,875 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H365.csv | rows=3519 | cols=288 | W=260
+2026-06-04 22:13:47,875 | INFO | Saved manifest: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\datasets_manifest.json
+2026-06-04 22:13:47,875 | INFO | DONE build_dataset
+2026-06-04 22:13:50,573 | INFO | START train_eval
+2026-06-04 22:13:50,602 | INFO | H=1 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4083 | inferred W=20
+2026-06-04 22:13:50,603 | INFO | H=1 | split train=3693 | val=130 | test=260
+2026-06-04 22:13:50,605 | INFO | H=1 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 22:13:50,605 | INFO | [TUNE] Ridge | n_iter=30 | cv=5
+2026-06-04 22:13:52,893 | INFO | [TUNE] Ridge best={'model__alpha': 3.0}
+2026-06-04 22:13:52,893 | INFO | [TUNE] ElasticNet | n_iter=40 | cv=5
+2026-06-04 22:13:53,511 | INFO | [TUNE] ElasticNet best={'model__l1_ratio': 0.95, 'model__alpha': 0.0001}
+2026-06-04 22:13:53,511 | INFO | [TUNE] MLPRegressor | n_iter=20 | cv=5
+2026-06-04 22:14:43,033 | INFO | [TUNE] MLPRegressor best={'model__learning_rate_init': 0.002, 'model__hidden_layer_sizes': (32,), 'model__alpha': 0.0005}
+2026-06-04 22:14:43,033 | INFO | [TUNE] RandomForest | n_iter=40 | cv=5
+2026-06-04 22:18:24,817 | INFO | [TUNE] RandomForest best={'n_estimators': 400, 'min_samples_leaf': 4, 'max_features': 0.8, 'max_depth': 6}
+2026-06-04 22:18:24,817 | INFO | [TUNE] ExtraTrees | n_iter=40 | cv=5
+2026-06-04 22:20:50,142 | INFO | [TUNE] ExtraTrees best={'n_estimators': 1500, 'min_samples_leaf': 4, 'max_features': 0.8, 'max_depth': 8}
+2026-06-04 22:20:50,143 | INFO | [TUNE] HistGB | n_iter=35 | cv=5
+2026-06-04 22:21:23,205 | INFO | [TUNE] HistGB best={'min_samples_leaf': 10, 'max_iter': 400, 'max_depth': 3, 'learning_rate': 0.03, 'l2_regularization': 0.0}
+2026-06-04 22:21:37,656 | INFO | H=1 | running SARIMAX fair predictions
+2026-06-04 22:21:57,546 | INFO | H=1 | best model = Naive
+2026-06-04 22:22:33,368 | INFO | H=1 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\predictions_H1.csv
+2026-06-04 22:22:33,369 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\raw_eurpln.csv
+2026-06-04 22:22:40,546 | INFO | H=7 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H7.csv | rows=4077 | inferred W=30
+2026-06-04 22:22:40,548 | INFO | H=7 | split train=3687 | val=130 | test=260
+2026-06-04 22:22:40,551 | INFO | H=7 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 22:22:40,552 | INFO | [TUNE] Ridge | n_iter=30 | cv=5
+2026-06-04 22:22:40,776 | INFO | [TUNE] Ridge best={'model__alpha': 10.0}
+2026-06-04 22:22:40,776 | INFO | [TUNE] ElasticNet | n_iter=40 | cv=5
+2026-06-04 22:22:42,223 | INFO | [TUNE] ElasticNet best={'model__l1_ratio': 0.95, 'model__alpha': 0.001}
+2026-06-04 22:22:42,224 | INFO | [TUNE] MLPRegressor | n_iter=20 | cv=5
+2026-06-04 22:23:39,512 | INFO | [TUNE] MLPRegressor best={'model__learning_rate_init': 0.001, 'model__hidden_layer_sizes': (64, 32), 'model__alpha': 0.005}
+2026-06-04 22:23:39,512 | INFO | [TUNE] RandomForest | n_iter=40 | cv=5
+2026-06-04 22:27:56,697 | INFO | [TUNE] RandomForest best={'n_estimators': 1200, 'min_samples_leaf': 8, 'max_features': 'sqrt', 'max_depth': 4}
+2026-06-04 22:27:56,697 | INFO | [TUNE] ExtraTrees | n_iter=40 | cv=5
+2026-06-04 22:30:24,836 | INFO | [TUNE] ExtraTrees best={'n_estimators': 1500, 'min_samples_leaf': 8, 'max_features': 'log2', 'max_depth': 6}
+2026-06-04 22:30:24,836 | INFO | [TUNE] HistGB | n_iter=35 | cv=5
+2026-06-04 22:31:02,470 | INFO | [TUNE] HistGB best={'min_samples_leaf': 80, 'max_iter': 600, 'max_depth': 3, 'learning_rate': 0.01, 'l2_regularization': 0.1}
+2026-06-04 22:31:22,099 | INFO | H=7 | running SARIMAX fair predictions
+2026-06-04 22:31:43,993 | INFO | H=7 | best model = Naive
+2026-06-04 22:32:25,431 | INFO | H=7 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\predictions_H7.csv
+2026-06-04 22:32:25,431 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_221240\raw_eurpln.csv
+2026-06-04 22:32:33,654 | INFO | H=30 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H30.csv | rows=4054 | inferred W=60
+2026-06-04 22:32:33,657 | INFO | H=30 | split train=3664 | val=130 | test=260
+2026-06-04 22:32:33,658 | INFO | H=30 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 22:32:33,659 | INFO | [TUNE] Ridge | n_iter=30 | cv=5
+2026-06-04 22:32:33,908 | INFO | [TUNE] Ridge best={'model__alpha': 100.0}
+2026-06-04 22:32:33,908 | INFO | [TUNE] ElasticNet | n_iter=40 | cv=5
+2026-06-04 22:32:38,970 | INFO | [TUNE] ElasticNet best={'model__l1_ratio': 0.95, 'model__alpha': 0.003}
+2026-06-04 22:32:38,971 | INFO | [TUNE] MLPRegressor | n_iter=20 | cv=5
+2026-06-04 22:33:29,061 | INFO | [TUNE] MLPRegressor best={'model__learning_rate_init': 0.002, 'model__hidden_layer_sizes': (64, 32), 'model__alpha': 1e-05}
+2026-06-04 22:33:29,061 | INFO | [TUNE] RandomForest | n_iter=40 | cv=5

@@ -1,33 +1,28 @@
-# src/fetch_nbp.py
 from __future__ import annotations
-import warnings
-from pandas.errors import PerformanceWarning
 
-warnings.filterwarnings("ignore", category=PerformanceWarning)
 import argparse
 import logging
+import warnings
 from datetime import date, timedelta
 from pathlib import Path
 from typing import List, Tuple
 
 import pandas as pd
 import requests
+from pandas.errors import PerformanceWarning
 
 from .config import get_data_dir, load_config, resolve_path, save_run_config
+
+warnings.filterwarnings("ignore", category=PerformanceWarning)
 
 TABLE = "A"
 FMT = "json"
 BASE = "https://api.nbp.pl/api/exchangerates/rates"
-
-# bezpiecznie poniżej limitu NBP (~367)
 MAX_DAYS_PER_REQ = 360
 
 log = logging.getLogger("fetch_nbp")
 
 
-# =========================================================
-# Logging
-# =========================================================
 def setup_logging(level: str) -> None:
     lvl = getattr(logging, str(level).upper(), logging.INFO)
     logging.basicConfig(
@@ -38,9 +33,6 @@ def setup_logging(level: str) -> None:
     )
 
 
-# =========================================================
-# Helpers
-# =========================================================
 def _pair_name(currency: str, quote: str = "PLN") -> str:
     return f"{currency.lower()}{quote.lower()}"
 
@@ -59,16 +51,31 @@ def _fetch_range(table: str, code: str, start: date, end: date) -> List[Tuple[da
     while cur <= end:
         chunk_end = min(end, cur + timedelta(days=MAX_DAYS_PER_REQ - 1))
         url = _url(table, code, cur, chunk_end)
-        log.info(f"GET {cur.isoformat()}..{chunk_end.isoformat()}")
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
 
-        js = r.json()
-        rates = js.get("rates", [])
-        for it in rates:
-            d = date.fromisoformat(it["effectiveDate"])
-            v = float(it["mid"])
-            out.append((d, v))
+        log.info(f"GET {cur.isoformat()}..{chunk_end.isoformat()}")
+
+        try:
+            r = requests.get(url, timeout=30)
+
+            if r.status_code == 404:
+                log.warning(f"NBP zwrócił 404 dla zakresu {cur.isoformat()}..{chunk_end.isoformat()}. Pomijam ten zakres.")
+                cur = chunk_end + timedelta(days=1)
+                continue
+
+            r.raise_for_status()
+
+            js = r.json()
+            rates = js.get("rates", [])
+
+            for it in rates:
+                d = date.fromisoformat(it["effectiveDate"])
+                v = float(it["mid"])
+                out.append((d, v))
+
+        except requests.exceptions.HTTPError as e:
+            log.warning(f"Błąd HTTP dla zakresu {cur.isoformat()}..{chunk_end.isoformat()}: {e}. Pomijam ten zakres.")
+        except requests.exceptions.RequestException as e:
+            log.warning(f"Błąd połączenia dla zakresu {cur.isoformat()}..{chunk_end.isoformat()}: {e}. Pomijam ten zakres.")
 
         cur = chunk_end + timedelta(days=1)
 
@@ -88,16 +95,16 @@ def _load_existing_daily(path: Path) -> pd.DataFrame:
 
 def _save_daily(path: Path, df: pd.DataFrame) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    out = df.copy().sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+
+    out = df.copy()
+    out = out.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
     out["date"] = pd.to_datetime(out["date"]).dt.date.astype(str)
     out.to_csv(path, index=False)
+
     log.info(f"Saved {path} rows={len(out)}")
 
 
-def _daily_to_hourly_derived(
-    daily_df: pd.DataFrame,
-    fill_weekends: bool,
-) -> pd.DataFrame:
+def _daily_to_hourly_derived(daily_df: pd.DataFrame, fill_weekends: bool) -> pd.DataFrame:
     d = daily_df.copy()
     d["date"] = pd.to_datetime(d["date"]).dt.normalize()
     d = d.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
@@ -111,10 +118,16 @@ def _daily_to_hourly_derived(
         d = d.rename(columns={"index": "date"})
 
     rows = []
+
     for dt, val in zip(d["date"], d["value"]):
         base = pd.to_datetime(dt)
         for h in range(24):
-            rows.append({"date": base + pd.Timedelta(hours=h), "value": float(val)})
+            rows.append(
+                {
+                    "date": base + pd.Timedelta(hours=h),
+                    "value": float(val),
+                }
+            )
 
     return pd.DataFrame(rows)
 
@@ -165,17 +178,22 @@ def _default_hourly_paths(cfg: dict, run_dir: Path | None) -> tuple[Path, Path]:
     return canonical, latest if run_dir is None else run_snapshot
 
 
-# =========================================================
-# Main
-# =========================================================
+def _filter_range(df: pd.DataFrame, start: date, end: date) -> pd.DataFrame:
+    if df.empty:
+        return df
+
+    out = df.copy()
+    dt = pd.to_datetime(out["date"]).dt.date
+    out = out[(dt >= start) & (dt <= end)].reset_index(drop=True)
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
 
-    # nowy pipeline
     ap.add_argument("--config", type=str, default=None)
     ap.add_argument("--run", type=str, default=None)
 
-    # legacy CLI
     ap.add_argument("--years", type=int, default=None)
     ap.add_argument("--out", type=str, default=None)
 
@@ -196,9 +214,6 @@ def main() -> None:
         if cfg is not None and not (run_dir / "config.json").exists():
             save_run_config(cfg, run_dir)
 
-    # -----------------------------------------------------
-    # Resolve settings
-    # -----------------------------------------------------
     if cfg is not None:
         currency = str(cfg["currency"]).upper()
         quote = str(cfg.get("target_quote", "PLN")).upper()
@@ -207,7 +222,6 @@ def main() -> None:
         start, end = _parse_date_range(cfg)
 
         if args.years is not None:
-            # jawny override legacy
             end = date.today()
             start = end - timedelta(days=int(args.years * 365.25))
     else:
@@ -225,9 +239,6 @@ def main() -> None:
         f"START fetch | pair={currency}/{quote} | freq={args.freq} | range={start.isoformat()}..{end.isoformat()} | refresh={args.refresh}"
     )
 
-    # -----------------------------------------------------
-    # Resolve output paths
-    # -----------------------------------------------------
     if args.out:
         out_path = resolve_path(args.out)
         canonical_out = out_path
@@ -243,9 +254,6 @@ def main() -> None:
 
         out_path = canonical_out
 
-    # -----------------------------------------------------
-    # Always build/refresh daily base first
-    # -----------------------------------------------------
     if cfg is not None:
         daily_canonical, daily_secondary = _default_daily_paths(cfg, run_dir)
     else:
@@ -258,53 +266,57 @@ def main() -> None:
 
     existing = _load_existing_daily(daily_canonical)
 
-    if (not args.refresh) and len(existing) > 0:
-        # jeśli config ma sztywny zakres, dofetchuj tylko brak końcówki
+    if not args.refresh and len(existing) > 0:
         last_date = pd.to_datetime(existing["date"].max()).date()
         fetch_start = max(start, last_date + timedelta(days=1))
 
         if fetch_start > end:
-            log.info("No new daily data to fetch (already up to date).")
-            daily_df = existing.copy()
-
-            # jeśli obecny plik ma szerszy zakres niż config, przytnij do configowego
-            daily_df = daily_df[
-                (pd.to_datetime(daily_df["date"]).dt.date >= start)
-                & (pd.to_datetime(daily_df["date"]).dt.date <= end)
-            ].reset_index(drop=True)
+            log.info("No new daily data to fetch.")
+            daily_df = _filter_range(existing, start, end)
         else:
             log.info(f"Incremental fetch from {fetch_start.isoformat()}..{end.isoformat()}")
             new_rows = _fetch_range(table, currency, fetch_start, end)
-            new_df = pd.DataFrame(new_rows, columns=["date", "value"])
-            daily_df = pd.concat([existing, new_df], ignore_index=True)
-            daily_df = daily_df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
-            daily_df = daily_df[
-                (pd.to_datetime(daily_df["date"]).dt.date >= start)
-                & (pd.to_datetime(daily_df["date"]).dt.date <= end)
-            ].reset_index(drop=True)
+
+            if new_rows:
+                new_df = pd.DataFrame(new_rows, columns=["date", "value"])
+                daily_df = pd.concat([existing, new_df], ignore_index=True)
+                daily_df = daily_df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+                daily_df = _filter_range(daily_df, start, end)
+            else:
+                log.warning("NBP nie zwrócił nowych rekordów. Zostawiam istniejący plik danych.")
+                daily_df = _filter_range(existing, start, end)
     else:
         log.info("Full fetch (refresh or empty file).")
         rows = _fetch_range(table, currency, start, end)
-        daily_df = pd.DataFrame(rows, columns=["date", "value"]).sort_values("date").reset_index(drop=True)
+
+        if not rows and len(existing) > 0:
+            log.warning("Full fetch nie zwrócił danych. Zostawiam istniejący plik danych.")
+            daily_df = _filter_range(existing, start, end)
+        else:
+            daily_df = pd.DataFrame(rows, columns=["date", "value"]).sort_values("date").reset_index(drop=True)
+
+    if daily_df.empty:
+        raise ValueError("Nie udało się pobrać ani znaleźć żadnych danych EUR/PLN.")
 
     _save_daily(daily_canonical, daily_df)
 
-    # dodatkowy snapshot / latest alias
     if daily_secondary is not None:
         _save_daily(daily_secondary, daily_df)
 
     data_dir = get_data_dir(cfg) if cfg is not None else daily_canonical.parent
     latest_daily = data_dir / f"raw_{pair}.csv"
+
     if latest_daily != daily_canonical and latest_daily != daily_secondary:
         _save_daily(latest_daily, daily_df)
 
-    # kompatybilność ze starszym backendem/frontendem
     legacy_daily = data_dir / f"{currency.lower()}_a.csv"
+
     if legacy_daily != daily_canonical and legacy_daily != daily_secondary:
         _save_daily(legacy_daily, daily_df)
 
     if run_dir is not None:
         run_daily = run_dir / f"raw_{pair}.csv"
+
         if run_daily != daily_canonical and run_daily != daily_secondary:
             _save_daily(run_daily, daily_df)
 
@@ -312,9 +324,6 @@ def main() -> None:
         log.info("DONE fetch daily")
         return
 
-    # -----------------------------------------------------
-    # Hourly derived
-    # -----------------------------------------------------
     if args.hourly_provider != "derived":
         raise ValueError("Only hourly-provider=derived is supported right now.")
 
@@ -335,11 +344,13 @@ def main() -> None:
 
     data_dir = get_data_dir(cfg) if cfg is not None else out_path.parent
     latest_hourly = data_dir / f"raw_{pair}_hourly.csv"
+
     if latest_hourly != out_path and latest_hourly != secondary_out:
         out.to_csv(latest_hourly, index=False)
 
     if run_dir is not None:
         run_hourly = run_dir / f"raw_{pair}_hourly.csv"
+
         if run_hourly != out_path and run_hourly != secondary_out:
             out.to_csv(run_hourly, index=False)
 

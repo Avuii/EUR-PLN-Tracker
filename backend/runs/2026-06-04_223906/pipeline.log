@@ -1,0 +1,141 @@
+2026-06-04 22:39:06,572 | INFO | START run_experiment | run_dir=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_223906
+2026-06-04 22:39:06,572 | INFO | [fetch] Attempt 1: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_223906
+2026-06-04 22:39:08,025 | INFO | [fetch] STDERR:
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!
+  warnings.warn(
+22:39:06 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2010-01-01..2026-06-04 | refresh=False
+22:39:06 | INFO | Incremental fetch from 2026-06-04..2026-06-04
+22:39:06 | INFO | GET 2026-06-04..2026-06-04
+22:39:07 | ERROR | FAILED fetch_nbp
+Traceback (most recent call last):
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 351, in <module>
+    main()
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 277, in main
+    new_rows = _fetch_range(table, currency, fetch_start, end)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 64, in _fetch_range
+    r.raise_for_status()
+  File "C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 351, in <module>
+    main()
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 277, in main
+    new_rows = _fetch_range(table, currency, fetch_start, end)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 64, in _fetch_range
+    r.raise_for_status()
+  File "C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json
+2026-06-04 22:39:08,025 | INFO | [fetch] Attempt 2: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.fetch_nbp --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json
+2026-06-04 22:39:09,254 | INFO | [fetch] STDERR:
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!
+  warnings.warn(
+22:39:08 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2010-01-01..2026-06-04 | refresh=False
+22:39:08 | INFO | Incremental fetch from 2026-06-04..2026-06-04
+22:39:08 | INFO | GET 2026-06-04..2026-06-04
+22:39:09 | ERROR | FAILED fetch_nbp
+Traceback (most recent call last):
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 351, in <module>
+    main()
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 277, in main
+    new_rows = _fetch_range(table, currency, fetch_start, end)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 64, in _fetch_range
+    r.raise_for_status()
+  File "C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 351, in <module>
+    main()
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 277, in main
+    new_rows = _fetch_range(table, currency, fetch_start, end)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 64, in _fetch_range
+    r.raise_for_status()
+  File "C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json
+2026-06-04 22:39:09,254 | INFO | [fetch] Attempt 3: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.fetch_nbp
+2026-06-04 22:39:09,703 | INFO | [fetch] STDERR:
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!
+  warnings.warn(
+22:39:09 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2021-06-04..2026-06-04 | refresh=False
+22:39:09 | ERROR | FAILED fetch_nbp
+Traceback (most recent call last):
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 351, in <module>
+    main()
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 237, in main
+    raise ValueError("Bez --config musisz podać --out.")
+ValueError: Bez --config musisz podać --out.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 351, in <module>
+    main()
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\fetch_nbp.py", line 237, in main
+    raise ValueError("Bez --config musisz podać --out.")
+ValueError: Bez --config musisz podać --out.
+2026-06-04 22:39:09,703 | ERROR | [fetch] FAILED after 3 attempt(s)
+2026-06-04 22:39:09,704 | ERROR | FAILED run_experiment
+Traceback (most recent call last):
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\run_experiment.py", line 203, in main
+    run_stage_with_fallbacks(
+  File "C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\src\run_experiment.py", line 103, in run_stage_with_fallbacks
+    raise RuntimeError(
+RuntimeError: {
+  "stage": "fetch",
+  "module": "src.fetch_nbp",
+  "status": "failed",
+  "attempts": [
+    {
+      "attempt": 1,
+      "command": [
+        "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json",
+        "--run",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\runs\\2026-06-04_223906"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\n22:39:06 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2010-01-01..2026-06-04 | refresh=False\n22:39:06 | INFO | Incremental fetch from 2026-06-04..2026-06-04\n22:39:06 | INFO | GET 2026-06-04..2026-06-04\n22:39:07 | ERROR | FAILED fetch_nbp\nTraceback (most recent call last):\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 351, in <module>\n    main()\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 277, in main\n    new_rows = _fetch_range(table, currency, fetch_start, end)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 64, in _fetch_range\n    r.raise_for_status()\n  File \"C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\models.py\", line 1026, in raise_for_status\n    raise HTTPError(http_error_msg, response=self)\nrequests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 351, in <module>\n    main()\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 277, in main\n    new_rows = _fetch_range(table, currency, fetch_start, end)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 64, in _fetch_range\n    r.raise_for_status()\n  File \"C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\models.py\", line 1026, in raise_for_status\n    raise HTTPError(http_error_msg, response=self)\nrequests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json\n",
+      "seconds": 1.453
+    },
+    {
+      "attempt": 2,
+      "command": [
+        "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "src.fetch_nbp",
+        "--config",
+        "C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\configs\\config.json"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\n22:39:08 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2010-01-01..2026-06-04 | refresh=False\n22:39:08 | INFO | Incremental fetch from 2026-06-04..2026-06-04\n22:39:08 | INFO | GET 2026-06-04..2026-06-04\n22:39:09 | ERROR | FAILED fetch_nbp\nTraceback (most recent call last):\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 351, in <module>\n    main()\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 277, in main\n    new_rows = _fetch_range(table, currency, fetch_start, end)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 64, in _fetch_range\n    r.raise_for_status()\n  File \"C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\models.py\", line 1026, in raise_for_status\n    raise HTTPError(http_error_msg, response=self)\nrequests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 351, in <module>\n    main()\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 277, in main\n    new_rows = _fetch_range(table, currency, fetch_start, end)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 64, in _fetch_range\n    r.raise_for_status()\n  File \"C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\models.py\", line 1026, in raise_for_status\n    raise HTTPError(http_error_msg, response=self)\nrequests.exceptions.HTTPError: 404 Client Error: Not Found - Brak danych for url: https://api.nbp.pl/api/exchangerates/rates/A/EUR/2026-06-04/2026-06-04/?format=json\n",
+      "seconds": 1.228
+    },
+    {
+      "attempt": 3,
+      "command": [
+        "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "src.fetch_nbp"
+      ],
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\requests\\__init__.py:113: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (7.3.0)/charset_normalizer (3.4.4) doesn't match a supported version!\n  warnings.warn(\n22:39:09 | INFO | START fetch | pair=EUR/PLN | freq=daily | range=2021-06-04..2026-06-04 | refresh=False\n22:39:09 | ERROR | FAILED fetch_nbp\nTraceback (most recent call last):\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 351, in <module>\n    main()\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 237, in main\n    raise ValueError(\"Bez --config musisz podać --out.\")\nValueError: Bez --config musisz podać --out.\nTraceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 351, in <module>\n    main()\n  File \"C:\\Users\\admin\\Documents\\GitHub\\EUR-PLN-Tracker\\backend\\src\\fetch_nbp.py\", line 237, in main\n    raise ValueError(\"Bez --config musisz podać --out.\")\nValueError: Bez --config musisz podać --out.\n",
+      "seconds": 0.448
+    }
+  ]
+}

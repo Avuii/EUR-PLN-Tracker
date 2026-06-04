@@ -1,127 +1,37 @@
-// src/lib/chartDomain.ts
-export type Domain = [number, number];
+function finiteValues(data: any[], keys: string[]) {
+  const values: number[] = [];
 
-/**
- * Auto-domain dla osi Y na podstawie wielu serii.
- * - liczy min/max ze wszystkich serii
- * - dodaje padding procentowy + minimalny padding absolutny
- * - zwraca [min, max] do <YAxis domain={...}/>
- */
-export function yDomainFromData<T extends Record<string, any>>(
-  data: T[],
-  keys: string[],
-  padPct: number = 0.06,
-  minAbsPad: number = 0.01
-): Domain {
-  if (!data || data.length === 0) return [0, 1];
-
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
-
-  for (const row of data) {
-    for (const k of keys) {
-      const v = row?.[k];
-      const n = typeof v === "number" ? v : Number(v);
-      if (!Number.isFinite(n)) continue;
-      if (n < min) min = n;
-      if (n > max) max = n;
+  for (const row of data ?? []) {
+    for (const key of keys) {
+      const n = Number(row?.[key]);
+      if (Number.isFinite(n)) values.push(n);
     }
   }
 
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
-
-  const span = Math.max(max - min, 0);
-  const pad = Math.max(span * padPct, minAbsPad);
-
-  // jeśli linia jest prawie płaska, zapewnij minimalny sensowny zakres
-  const lo = min - pad;
-  const hi = max + pad;
-
-  // unikaj sytuacji lo==hi
-  if (Math.abs(hi - lo) < 1e-12) return [lo - 1, hi + 1];
-
-  return [lo, hi];
+  return values;
 }
 
-/**
- * Auto-domain symetryczny dla reszt (center=0).
- * - bierze max(|min|,|max|) i dodaje padding
- */
-export function yDomainSymmetric<T extends Record<string, any>>(
-  data: T[],
-  keys: string[],
-  padPct: number = 0.08,
-  minAbsPad: number = 0.01
-): Domain {
-  if (!data || data.length === 0) return [-1, 1];
+export function yDomainFromData(data: any[], keys: string[], paddingRatio = 0.08, minPadding = 0.01): [number, number] {
+  const values = finiteValues(data, keys);
 
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
+  if (!values.length) return [0, 1];
 
-  for (const row of data) {
-    for (const k of keys) {
-      const v = row?.[k];
-      const n = typeof v === "number" ? v : Number(v);
-      if (!Number.isFinite(n)) continue;
-      if (n < min) min = n;
-      if (n > max) max = n;
-    }
-  }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(max - min, minPadding);
+  const pad = Math.max(span * paddingRatio, minPadding);
 
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [-1, 1];
-
-  const m = Math.max(Math.abs(min), Math.abs(max));
-  const pad = Math.max(m * padPct, minAbsPad);
-  const r = m + pad;
-
-  return [-r, r];
-}
-
-export function yDomainWithPadding<T extends Record<string, any>>(
-  data: T[],
-  keys: string[],
-  padPct: number = 0.06,
-  minAbsPad: number = 0.01
-): Domain {
-  if (!data || data.length === 0) return [0, 1];
-
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
-
-  for (const row of data) {
-    for (const k of keys) {
-      const v = row?.[k];
-      const n = typeof v === "number" ? v : Number(v);
-      if (!Number.isFinite(n)) continue;
-      if (n < min) min = n;
-      if (n > max) max = n;
-    }
-  }
-
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
-
-  const span = Math.max(max - min, minAbsPad);
-  const pad = Math.max(span * padPct, minAbsPad);
   return [min - pad, max + pad];
 }
 
-export function yDomainSymmetricAroundZero(
-  rows: Record<string, any>[],
-  keys: string[],
-  padFrac = 0.12,
-  minHalfSpan = 0.02
-): [number, number] {
-  let maxAbs = 0;
+export function yDomainSymmetric(data: any[], keys: string[], paddingRatio = 0.12, minAbs = 0.01): [number, number] {
+  const values = finiteValues(data, keys);
 
-  for (const r of rows) {
-    for (const k of keys) {
-      const v = r[k];
-      if (Number.isFinite(v)) maxAbs = Math.max(maxAbs, Math.abs(v));
-    }
-  }
+  if (!values.length) return [-1, 1];
 
-  maxAbs = Math.max(maxAbs, minHalfSpan);
-  const pad = maxAbs * padFrac;
-  const half = maxAbs + pad;
-  return [-half, half];
+  const maxAbs = Math.max(...values.map((v) => Math.abs(v)), minAbs);
+  const pad = Math.max(maxAbs * paddingRatio, minAbs);
+  const bound = maxAbs + pad;
+
+  return [-bound, bound];
 }

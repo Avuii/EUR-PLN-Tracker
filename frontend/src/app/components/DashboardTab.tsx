@@ -147,7 +147,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   const d = payload[0]?.payload?.date ?? "";
 
   return (
-    <div className="bg-[#2a2f4a] border border-gray-700 rounded p-3 text-xs">
+    <div className="rounded-2xl border border-white/10 bg-[#070b16] p-3 text-xs text-white shadow-xl">
       <div className="mb-2">{d}</div>
       {payload.map((entry: any, index: number) => (
         <div key={index} style={{ color: entry.color }}>
@@ -164,6 +164,7 @@ export default function DashboardTab() {
   const [logs, setLogs] = useState<string>("");
   const [isRunning, setIsRunning] = useState(false);
   const [runErr, setRunErr] = useState<string>("");
+  const [backendErr, setBackendErr] = useState<string>("");
   const [runStage, setRunStage] = useState<string>("");
 
   const [params, setParams] = useState<RunParams>({
@@ -178,16 +179,25 @@ export default function DashboardTab() {
   });
 
   const loadDashboard = useCallback(async () => {
-    const [r, s, lg] = await Promise.all([
-      api.results().catch(() => null),
-      api.series(3650).catch(() => ({ series: [] })),
-      api.logs().catch(() => ({ text: "", nextOffset: 0, state: { running: false, stage: null } })),
-    ]);
+    try {
+      const [r, s, lg] = await Promise.all([
+        api.results(),
+        api.series(3650),
+        api.logs().catch(() => ({ text: "", nextOffset: 0, state: { running: false, stage: null } })),
+      ]);
 
-    if (r) setResults(r);
-    setSeries(s.series ?? []);
-    setLogs(lg.text ?? "");
-    setRunStage(lg.state?.stage ? String(lg.state.stage) : "");
+      setBackendErr("");
+      setResults(r);
+      setSeries(s.series ?? []);
+      setLogs(lg.text ?? "");
+      setRunStage(lg.state?.stage ? String(lg.state.stage) : "");
+    } catch (e: any) {
+      setBackendErr(String(e?.message ?? e));
+      setResults(null);
+      setSeries([]);
+      setLogs("");
+      setRunStage("");
+    }
   }, []);
 
   useEffect(() => {
@@ -303,21 +313,28 @@ export default function DashboardTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="app-page space-y-6">
+      {backendErr ? (
+        <Card className="app-card border-red-500/30 bg-red-500/10 p-4 rounded-3xl">
+          <div className="text-red-100 text-sm font-medium">Backend nie odpowiada na 127.0.0.1:8000.</div>
+          <div className="mt-1 text-red-200/80 text-xs">Uruchom FastAPI w drugim terminalu, potem odśwież stronę. Szczegóły: {backendErr}</div>
+        </Card>
+      ) : null}
+
       {runErr ? (
-        <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-2xl">
+        <Card className="app-card border-red-500/30 bg-red-500/10 p-4 rounded-3xl">
           <div className="text-red-200 text-sm">Błąd: {runErr}</div>
         </Card>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <Card className="app-card p-6 rounded-3xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">Ostatni kurs</div>
           <div className="mt-3 text-3xl font-semibold text-white">{lastValue === null ? "—" : fmt4(lastValue)} zł</div>
           <div className="mt-2 text-xs text-gray-500">{lastRate?.date ?? "—"}</div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-500/10 to-white/[0.02] border-red-500/20 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+        <Card className="app-card border-red-500/20 p-6 rounded-3xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">Zmiana dzienna</div>
           <div
             className={`mt-3 text-3xl font-semibold ${
@@ -329,14 +346,14 @@ export default function DashboardTab() {
           <div className="mt-2 text-xs text-gray-500">{dailyAbs === null ? "—" : `${fmt4(dailyAbs)} zł`}</div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500/10 to-white/[0.02] border-purple-500/20 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+        <Card className="app-card border-purple-500/20 p-6 rounded-3xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">
             RMSE (BEST) {bestPack?.horizon ? <span className="text-gray-500">• H={bestPack.horizon}</span> : null}
           </div>
           <div className="mt-3 text-3xl font-semibold text-white">{bestPack ? fmt4(bestPack.RMSE) : "—"}</div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-cyan-500/10 to-white/[0.02] border-cyan-500/20 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+        <Card className="app-card border-cyan-500/20 p-6 rounded-3xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">
             MAE (BEST) {bestPack?.horizon ? <span className="text-gray-500">• H={bestPack.horizon}</span> : null}
           </div>
@@ -344,7 +361,7 @@ export default function DashboardTab() {
           <div className="mt-2 text-xs text-gray-500">Best model: {bestPack?.bestModel ?? "—"}</div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500/10 to-white/[0.02] border-green-500/20 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+        <Card className="app-card border-emerald-500/20 p-6 rounded-3xl">
           <div className="text-xs text-gray-400 uppercase tracking-wider">
             MAPE (BEST) {bestPack?.horizon ? <span className="text-gray-500">• H={bestPack.horizon}</span> : null}
           </div>
@@ -354,13 +371,13 @@ export default function DashboardTab() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(360px,0.8fr)] items-start">
+        <Card className="app-card p-6 rounded-3xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white/90">EUR/PLN (historia)</h3>
           </div>
 
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={360}>
             <LineChart data={series}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <XAxis
@@ -376,6 +393,8 @@ export default function DashboardTab() {
                 tick={{ fill: "#9ca3af", fontSize: 11 }}
                 tickLine={false}
                 domain={yDomainSeries}
+                width={78}
+                tickFormatter={(v) => fmt4(Number(v))}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line type="monotone" dataKey="value" stroke="#f59e0b" strokeWidth={2.2} dot={false} name="EUR/PLN" />
@@ -385,12 +404,12 @@ export default function DashboardTab() {
         </Card>
 
         <div className="space-y-6">
-          <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+          <Card className="app-card p-6 rounded-3xl">
             <div className="text-white/90 mb-4">Uruchom eksperyment</div>
 
             <div className="text-xs text-gray-400 mb-2">Lata:</div>
             <input
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white"
+              className="app-input w-full px-3 py-2 text-white"
               type="number"
               value={params.years}
               onChange={(e) => setParams((p) => ({ ...p, years: Number(e.target.value) }))}
@@ -419,7 +438,7 @@ export default function DashboardTab() {
             </div>
 
             <Button
-              className="mt-5 w-full rounded-full py-6 text-white bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-400/20 shadow-[0_0_30px_rgba(34,211,238,0.18)] hover:shadow-[0_0_40px_rgba(34,211,238,0.28)]"
+              className="app-button mt-5 w-full py-6"
               onClick={handleRun}
               disabled={isRunning}
             >
@@ -427,12 +446,12 @@ export default function DashboardTab() {
             </Button>
           </Card>
 
-          <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
+          <Card className="app-card p-6 rounded-3xl">
             <div className="flex items-center justify-between mb-3">
               <div className="text-white/90">Logi</div>
               <Button
                 variant="secondary"
-                className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10"
+                className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-white"
                 onClick={() => navigator.clipboard.writeText(logs ?? "")}
               >
                 Copy

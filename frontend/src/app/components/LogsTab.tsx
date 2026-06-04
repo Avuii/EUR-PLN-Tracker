@@ -39,8 +39,8 @@ export default function LogsTab() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-5 rounded-2xl backdrop-blur-xl shadow-xl">
+    <div className="app-page space-y-6">
+      <Card className="app-card rounded-3xl p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h2 className="text-white/90 text-xl font-semibold">Logi</h2>
@@ -52,7 +52,7 @@ export default function LogsTab() {
           <div className="flex items-center gap-2">
             <button
               onClick={loadLogs}
-              className="text-xs text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-xl transition-all flex items-center gap-2"
+              className="text-xs text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-2xl transition-all flex items-center gap-2"
             >
               <RefreshCw size={14} />
               Odśwież
@@ -60,7 +60,7 @@ export default function LogsTab() {
 
             <button
               onClick={handleCopy}
-              className="text-xs text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-xl transition-all flex items-center gap-2"
+              className="text-xs text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-2xl transition-all flex items-center gap-2"
             >
               <Copy size={14} />
               Copy
@@ -68,7 +68,7 @@ export default function LogsTab() {
 
             <button
               onClick={handleClear}
-              className="text-xs text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-xl transition-all flex items-center gap-2"
+              className="text-xs text-white/90 bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-2 rounded-2xl transition-all flex items-center gap-2"
             >
               <Trash2 size={14} />
               Clear
@@ -78,14 +78,14 @@ export default function LogsTab() {
       </Card>
 
       {err ? (
-        <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-2xl">
+        <Card className="bg-red-500/10 border-red-500/20 p-4 rounded-3xl">
           <div className="text-red-200 text-sm">Błąd: {err}</div>
         </Card>
       ) : null}
 
-      <Card className="bg-gradient-to-br from-white/5 to-white/[0.02] border-white/10 p-6 rounded-2xl backdrop-blur-xl shadow-xl">
-        <div className="rounded-xl border border-white/10 bg-black/30 overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/10 bg-black/20 text-xs uppercase tracking-wider text-gray-400">
+      <Card className="app-card rounded-3xl p-6">
+        <div className="rounded-2xl border border-white/10 bg-black/35 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/10 bg-black/25 text-xs uppercase tracking-wider text-gray-400">
             Console output
           </div>
 

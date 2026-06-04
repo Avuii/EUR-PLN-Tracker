@@ -62,20 +62,60 @@ def _json_load(path: Path) -> Any:
 def _find_run_dirs() -> list[Path]:
     runs_dir = get_runs_dir(cfg)
     runs_dir.mkdir(parents=True, exist_ok=True)
-    return sorted([p for p in runs_dir.iterdir() if p.is_dir()], key=lambda p: p.stat().st_mtime, reverse=True)
+    return sorted(
+        [p for p in runs_dir.iterdir() if p.is_dir()],
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
 
 
-def _latest_run() -> Path:
+def _has_artifacts(run_path: Path) -> bool:
+    has_metrics = (run_path / "metrics.json").exists()
+    has_forecast = (run_path / "forecast_points.csv").exists()
+    has_predictions = any(run_path.glob("predictions_H*.csv"))
+    return has_metrics and has_forecast and has_predictions
+
+
+def _is_ok_run(run_path: Path) -> bool:
+    status_path = run_path / "pipeline_status.json"
+
+    if status_path.exists():
+        try:
+            status = _json_load(status_path)
+            if status.get("status") == "failed":
+                return False
+        except Exception:
+            pass
+
+    return _has_artifacts(run_path)
+
+
+def _latest_any_run() -> Path:
     runs = _find_run_dirs()
     if not runs:
         raise HTTPException(status_code=404, detail="Brak uruchomień pipeline.")
     return runs[0]
 
 
+def _latest_run() -> Path:
+    runs = _find_run_dirs()
+
+    if not runs:
+        raise HTTPException(status_code=404, detail="Brak uruchomień pipeline.")
+
+    for run_path in runs:
+        if _is_ok_run(run_path):
+            return run_path
+
+    raise HTTPException(
+        status_code=404,
+        detail="Brak udanego runa z plikami metrics.json, forecast_points.csv i predictions_H*.csv.",
+    )
+
+
 def _resolve_run(run: str | None) -> Path:
     if not run:
         return _latest_run()
-
     p = resolve_path(run)
     if p.exists() and p.is_dir():
         return p
@@ -457,7 +497,7 @@ def api_data(limit: int = Query(500, ge=1, le=50000)):
 
 @app.get("/api/logs")
 def api_logs(offset: int = Query(0, ge=0)):
-    run_path = _latest_run()
+    run_path = _latest_any_run()
     text = _read_pipeline_log(run_path)
     if offset > len(text):
         offset = 0
