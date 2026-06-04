@@ -36,3 +36,135 @@ C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\request
 2026-06-04 23:14:23,036 | INFO | DONE build_dataset
 2026-06-04 23:14:23,086 | INFO | [build_dataset] OK in 2.16s
 2026-06-04 23:14:23,086 | INFO | [train_eval] Attempt 1: C:\Users\admin\AppData\Local\Programs\Python\Python312\python.exe -m src.train_eval --config C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\configs\config.json --run C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419 --no-tuning --test-size-samples 260
+2026-06-04 23:28:34,334 | INFO | [train_eval] STDERR:
+2026-06-04 23:14:24,303 | INFO | START train_eval
+2026-06-04 23:14:24,333 | INFO | H=1 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H1.csv | rows=4083 | inferred W=20
+2026-06-04 23:14:24,335 | INFO | H=1 | split train=3693 | val=130 | test=260
+2026-06-04 23:14:24,336 | INFO | H=1 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 23:14:24,337 | INFO | H=1 | tuning disabled
+2026-06-04 23:14:44,351 | INFO | H=1 | running SARIMAX fair predictions
+2026-06-04 23:15:05,887 | INFO | H=1 | best model = Naive
+2026-06-04 23:15:56,941 | INFO | H=1 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\predictions_H1.csv
+2026-06-04 23:15:56,942 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but RandomForestRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but ExtraTreesRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but HistGradientBoostingRegressor was fitted without feature names
+  warnings.warn(
+2026-06-04 23:16:07,542 | INFO | H=7 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H7.csv | rows=4077 | inferred W=30
+2026-06-04 23:16:07,545 | INFO | H=7 | split train=3687 | val=130 | test=260
+2026-06-04 23:16:07,548 | INFO | H=7 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 23:16:07,548 | INFO | H=7 | tuning disabled
+2026-06-04 23:16:26,124 | INFO | H=7 | running SARIMAX fair predictions
+2026-06-04 23:16:48,523 | INFO | H=7 | best model = Naive
+2026-06-04 23:17:32,049 | INFO | H=7 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\predictions_H7.csv
+2026-06-04 23:17:32,050 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but RandomForestRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but ExtraTreesRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but HistGradientBoostingRegressor was fitted without feature names
+  warnings.warn(
+2026-06-04 23:17:39,458 | INFO | H=30 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H30.csv | rows=4054 | inferred W=60
+2026-06-04 23:17:39,460 | INFO | H=30 | split train=3664 | val=130 | test=260
+2026-06-04 23:17:39,462 | INFO | H=30 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 23:17:39,462 | INFO | H=30 | tuning disabled
+2026-06-04 23:18:07,997 | INFO | H=30 | running SARIMAX fair predictions
+2026-06-04 23:18:30,477 | INFO | H=30 | best model = Ridge
+2026-06-04 23:19:44,357 | INFO | H=30 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\predictions_H30.csv
+2026-06-04 23:19:44,358 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but RandomForestRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but ExtraTreesRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but HistGradientBoostingRegressor was fitted without feature names
+  warnings.warn(
+2026-06-04 23:20:01,259 | INFO | H=90 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H90.csv | rows=3934 | inferred W=120
+2026-06-04 23:20:01,262 | INFO | H=90 | split train=3544 | val=130 | test=260
+2026-06-04 23:20:01,264 | INFO | H=90 | best baselines = {'SMA': 60, 'EMA': 20}
+2026-06-04 23:20:01,265 | INFO | H=90 | tuning disabled
+2026-06-04 23:20:31,948 | INFO | H=90 | running SARIMAX fair predictions
+2026-06-04 23:20:57,315 | INFO | H=90 | best model = SMA
+2026-06-04 23:22:04,886 | INFO | H=90 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\predictions_H90.csv
+2026-06-04 23:22:04,886 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but RandomForestRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but ExtraTreesRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but HistGradientBoostingRegressor was fitted without feature names
+  warnings.warn(
+2026-06-04 23:22:20,668 | INFO | H=180 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H180.csv | rows=3784 | inferred W=180
+2026-06-04 23:22:20,674 | INFO | H=180 | split train=3394 | val=130 | test=260
+2026-06-04 23:22:20,676 | INFO | H=180 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 23:22:20,677 | INFO | H=180 | tuning disabled
+2026-06-04 23:22:54,393 | INFO | H=180 | running SARIMAX fair predictions
+2026-06-04 23:23:24,259 | INFO | H=180 | best model = ExtraTrees
+2026-06-04 23:24:53,889 | INFO | H=180 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\predictions_H180.csv
+2026-06-04 23:24:53,891 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but RandomForestRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but ExtraTreesRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but HistGradientBoostingRegressor was fitted without feature names
+  warnings.warn(
+2026-06-04 23:25:12,701 | INFO | H=365 | dataset=C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\data\ds_H365.csv | rows=3519 | inferred W=260
+2026-06-04 23:25:12,707 | INFO | H=365 | split train=3129 | val=130 | test=260
+2026-06-04 23:25:12,709 | INFO | H=365 | best baselines = {'SMA': 5, 'EMA': 10}
+2026-06-04 23:25:12,709 | INFO | H=365 | tuning disabled
+2026-06-04 23:25:52,819 | INFO | H=365 | running SARIMAX fair predictions
+2026-06-04 23:26:34,083 | INFO | H=365 | best model = ElasticNet
+2026-06-04 23:28:13,610 | INFO | H=365 | saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\predictions_H365.csv
+2026-06-04 23:28:13,611 | INFO | Źródło z manifestu: C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\raw_eurpln.csv
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but StandardScaler was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but RandomForestRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but ExtraTreesRegressor was fitted without feature names
+  warnings.warn(
+C:\Users\admin\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py:2684: UserWarning: X has feature names, but HistGradientBoostingRegressor was fitted without feature names
+  warnings.warn(
+2026-06-04 23:28:34,082 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\run_config.json
+2026-06-04 23:28:34,082 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\metrics.json
+2026-06-04 23:28:34,082 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\metrics.csv
+2026-06-04 23:28:34,082 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\forecast_points.csv
+2026-06-04 23:28:34,083 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\backtest.json
+2026-06-04 23:28:34,083 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\best_ml_params.json
+2026-06-04 23:28:34,083 | INFO | Saved C:\Users\admin\Documents\GitHub\EUR-PLN-Tracker\backend\runs\2026-06-04_231419\summary.json
+2026-06-04 23:28:34,085 | INFO | DONE train_eval in 0 days 00:14:09.780566
+2026-06-04 23:28:34,335 | INFO | [train_eval] OK in 851.25s
+2026-06-04 23:28:34,336 | INFO | DONE run_experiment
