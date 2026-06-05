@@ -1,4 +1,3 @@
-# src/train_eval.py
 from __future__ import annotations
 
 import argparse
@@ -21,6 +20,7 @@ from sklearn.preprocessing import StandardScaler
 
 from .config import (
     get_data_dir,
+    get_run_data_dir,
     load_config,
     make_run_dir,
     model_enabled,
@@ -239,11 +239,33 @@ def infer_schema(df: pd.DataFrame) -> Dict[str, Any]:
     }
 
 
-def _find_ds_csv(data_dir: Path, H: int) -> Path:
-    p = data_dir / f"ds_H{H}.csv"
-    if not p.exists():
-        raise FileNotFoundError(f"Brak datasetu: {p}")
-    return p
+def _find_ds_csv(cfg: dict[str, Any], run_path: Path, H: int, logger: logging.Logger) -> Path:
+    manifest = run_path / "datasets_manifest.json"
+    if manifest.exists():
+        try:
+            js = json.loads(manifest.read_text(encoding="utf-8"))
+            ds_info = (js.get("datasets") or {}).get(f"H{H}") or {}
+            ds_path = ds_info.get("path")
+            if ds_path:
+                p = resolve_path(ds_path)
+                if p.exists():
+                    logger.info(f"Dataset z manifestu: {p}")
+                    return p
+        except Exception:
+            pass
+
+    candidates = [
+        get_run_data_dir(run_path, cfg) / f"ds_H{H}.csv",
+        run_path / f"ds_H{H}.csv",
+        get_data_dir(cfg) / f"ds_H{H}.csv",
+    ]
+
+    for p in candidates:
+        if p.exists():
+            logger.info(f"Dataset znaleziony: {p}")
+            return p
+
+    raise FileNotFoundError(f"Brak datasetu ds_H{H}.csv w run/data, run root ani global data.")
 
 
 def _find_source_csv(cfg: dict[str, Any], run_path: Path, logger: logging.Logger) -> Path:
@@ -259,6 +281,19 @@ def _find_source_csv(cfg: dict[str, Any], run_path: Path, logger: logging.Logger
                     return p
         except Exception:
             pass
+
+    run_data_dir = get_run_data_dir(run_path, cfg)
+    pair = f"{str(cfg['currency']).lower()}{str(cfg.get('target_quote', 'PLN')).lower()}"
+    candidates = [
+        run_data_dir / f"raw_{pair}.csv",
+        run_path / f"raw_{pair}.csv",
+        run_data_dir / f"{str(cfg['currency']).lower()}_a.csv",
+        run_path / f"{str(cfg['currency']).lower()}_a.csv",
+    ]
+    for p in candidates:
+        if p.exists():
+            logger.info(f"Źródło z runa: {p}")
+            return p
 
     data_dir = get_data_dir(cfg)
     patterns = [
@@ -759,8 +794,7 @@ def eval_horizon(
     test_size_override: Optional[int],
     backtest_windows_override: Optional[int],
 ) -> Dict[str, Any]:
-    data_dir = get_data_dir(cfg)
-    ds_path = _find_ds_csv(data_dir, H)
+    ds_path = _find_ds_csv(cfg, run_path, H, logger)
     df = pd.read_csv(ds_path, parse_dates=["date", "target_date"]).sort_values("date").reset_index(drop=True)
     schema = infer_schema(df)
 
@@ -945,7 +979,8 @@ def eval_horizon(
         pred_df[f"err_{col}"] = pred_df[col] - pred_df["true_target"]
         pred_df[f"abs_err_{col}"] = np.abs(pred_df[f"err_{col}"])
 
-    pred_csv = run_path / f"predictions_H{H}.csv"
+    run_data_dir = get_run_data_dir(run_path, cfg)
+    pred_csv = run_data_dir / f"predictions_H{H}.csv"
     pred_df.to_csv(pred_csv, index=False)
     logger.info(f"H={H} | saved {pred_csv}")
 
@@ -1085,6 +1120,7 @@ def main() -> None:
     else:
         run_path = resolve_path(args.run)
         run_path.mkdir(parents=True, exist_ok=True)
+        get_run_data_dir(run_path, cfg)
         if not (run_path / "config.json").exists():
             save_run_config(cfg, run_path)
 
@@ -1209,16 +1245,20 @@ def main() -> None:
     save_json(run_path / "best_ml_params.json", best_params_by_horizon)
     save_json(run_path / "summary.json", summary)
 
+    run_data_dir = get_run_data_dir(run_path, cfg)
+
     metrics_df = pd.DataFrame(metrics_rows)
-    metrics_df.to_csv(run_path / "metrics.csv", index=False)
+    metrics_csv = run_data_dir / "metrics.csv"
+    metrics_df.to_csv(metrics_csv, index=False)
 
     point_df = pd.DataFrame(point_forecast_rows).sort_values("H")
-    point_df.to_csv(run_path / "forecast_points.csv", index=False)
+    forecast_csv = run_data_dir / "forecast_points.csv"
+    point_df.to_csv(forecast_csv, index=False)
 
     logger.info(f"Saved {run_path / 'run_config.json'}")
     logger.info(f"Saved {run_path / 'metrics.json'}")
-    logger.info(f"Saved {run_path / 'metrics.csv'}")
-    logger.info(f"Saved {run_path / 'forecast_points.csv'}")
+    logger.info(f"Saved {metrics_csv}")
+    logger.info(f"Saved {forecast_csv}")
     logger.info(f"Saved {run_path / 'backtest.json'}")
     logger.info(f"Saved {run_path / 'best_ml_params.json'}")
     logger.info(f"Saved {run_path / 'summary.json'}")

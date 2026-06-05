@@ -1,7 +1,7 @@
-# api/main.py
 from __future__ import annotations
 
 import json
+import math
 import mimetypes
 import subprocess
 import sys
@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-from src.config import get_data_dir, get_runs_dir, load_config, resolve_path
+from src.config import get_data_dir, get_run_data_dir, get_runs_dir, load_config, resolve_path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -69,10 +69,63 @@ def _find_run_dirs() -> list[Path]:
     )
 
 
+
+
+def _run_data_dir(run_path: Path) -> Path:
+    return get_run_data_dir(run_path, cfg)
+
+
+def _run_file(run_path: Path, filename: str) -> Path:
+    candidates = [
+        _run_data_dir(run_path) / filename,
+        run_path / filename,
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return candidates[0]
+
+
+def _json_safe(value: Any) -> Any:
+    if value is None:
+        return None
+
+    try:
+        if pd.isna(value):
+            return None
+    except Exception:
+        pass
+
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+
+    if isinstance(value, Path):
+        return str(value)
+
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+
+    if isinstance(value, (list, tuple, set)):
+        return [_json_safe(v) for v in value]
+
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+
+    return value
+
+
+def _df_records(df: pd.DataFrame) -> list[dict[str, Any]]:
+    clean = df.copy()
+    clean = clean.replace([float("inf"), float("-inf")], pd.NA)
+    clean = clean.astype(object).where(pd.notna(clean), None)
+    return _json_safe(clean.to_dict(orient="records"))
+
+
 def _has_artifacts(run_path: Path) -> bool:
+    run_data_dir = _run_data_dir(run_path)
     has_metrics = (run_path / "metrics.json").exists()
-    has_forecast = (run_path / "forecast_points.csv").exists()
-    has_predictions = any(run_path.glob("predictions_H*.csv"))
+    has_forecast = (run_data_dir / "forecast_points.csv").exists() or (run_path / "forecast_points.csv").exists()
+    has_predictions = any(run_data_dir.glob("predictions_H*.csv")) or any(run_path.glob("predictions_H*.csv"))
     return has_metrics and has_forecast and has_predictions
 
 
@@ -109,7 +162,7 @@ def _latest_run() -> Path:
 
     raise HTTPException(
         status_code=404,
-        detail="Brak udanego runa z plikami metrics.json, forecast_points.csv i predictions_H*.csv.",
+        detail="Brak udanego runa z plikami metrics.json oraz CSV w run/data.",
     )
 
 
@@ -138,10 +191,10 @@ def _run_json(run_path: Path, filename: str, required: bool = True) -> Any:
 
 
 def _run_csv(run_path: Path, filename: str, required: bool = True) -> pd.DataFrame:
-    p = run_path / filename
+    p = _run_file(run_path, filename)
     if not p.exists():
         if required:
-            raise HTTPException(status_code=404, detail=f"Brak pliku {filename} w {run_path.name}")
+            raise HTTPException(status_code=404, detail=f"Brak pliku {filename} w {run_path.name}/data")
         return pd.DataFrame()
     return pd.read_csv(p)
 
@@ -174,6 +227,20 @@ def _read_source_csv_for_latest(run_path: Path) -> pd.DataFrame:
                 source_csv = resolve_path(src)
         except Exception:
             source_csv = None
+
+    if source_csv is None or not source_csv.exists():
+        run_data_dir = _run_data_dir(run_path)
+        run_patterns = [
+            f"raw_{str(cfg['currency']).lower()}{str(cfg.get('target_quote', 'PLN')).lower()}_*.csv",
+            f"raw_{str(cfg['currency']).lower()}{str(cfg.get('target_quote', 'PLN')).lower()}.csv",
+            f"{str(cfg['currency']).lower()}_a.csv",
+            "*.csv",
+        ]
+        for pat in run_patterns:
+            found = sorted(run_data_dir.glob(pat), key=lambda p: p.stat().st_mtime, reverse=True)
+            if found:
+                source_csv = found[0]
+                break
 
     if source_csv is None or not source_csv.exists():
         data_dir = get_data_dir(cfg)
@@ -244,7 +311,7 @@ def _compat_results_payload(run_path: Path) -> dict[str, Any]:
     if not forecast_points.empty:
         for _, row in forecast_points.iterrows():
             h = str(int(row["H"]))
-            forecast_by_h[h] = [row.where(pd.notna(row), None).to_dict()]
+            forecast_by_h[h] = _df_records(pd.DataFrame([row.to_dict()]))
 
     latest = _get_latest_value_info(run_path)
 
@@ -266,9 +333,10 @@ def _compat_results_payload(run_path: Path) -> dict[str, Any]:
 
 
 def _safe_predictions_file(run_path: Path, h: int) -> Path:
-    p = run_path / f"predictions_H{h}.csv"
+    filename = f"predictions_H{h}.csv"
+    p = _run_file(run_path, filename)
     if not p.exists():
-        raise HTTPException(status_code=404, detail=f"Brak predictions_H{h}.csv")
+        raise HTTPException(status_code=404, detail=f"Brak {filename} w {run_path.name}/data")
     return p
 
 
@@ -363,19 +431,18 @@ def run_backtest(run_name: str):
 def run_forecast(run_name: str, h: int = Query(..., ge=1)):
     run_path = _resolve_run(run_name)
     df = _run_csv(run_path, "forecast_points.csv")
+    df["H"] = pd.to_numeric(df["H"], errors="coerce")
     df = df[df["H"] == h].copy()
     if df.empty:
         raise HTTPException(status_code=404, detail=f"Brak forecast dla H={h}")
-    df = df.where(pd.notna(df), None)
-    return {"rows": df.to_dict(orient="records")}
+    return {"rows": _df_records(df)}
 
 
 @app.get("/api/runs/{run_name}/predictions")
 def run_predictions(run_name: str, h: int = Query(..., ge=1)):
     run_path = _resolve_run(run_name)
     df = pd.read_csv(_safe_predictions_file(run_path, h))
-    df = df.where(pd.notna(df), None)
-    return {"rows": df.to_dict(orient="records")}
+    return {"rows": _df_records(df)}
 
 
 @app.get("/api/runs/{run_name}/logs")
@@ -517,19 +584,18 @@ def api_logs(offset: int = Query(0, ge=0)):
 def api_predictions(h: int = Query(30, ge=1)):
     run_path = _latest_run()
     df = pd.read_csv(_safe_predictions_file(run_path, h))
-    df = df.where(pd.notna(df), None)
-    return {"rows": df.to_dict(orient="records")}
+    return {"rows": _df_records(df)}
 
 
 @app.get("/api/forecast")
 def api_forecast(h: int = Query(30, ge=1)):
     run_path = _latest_run()
     df = _run_csv(run_path, "forecast_points.csv")
+    df["H"] = pd.to_numeric(df["H"], errors="coerce")
     df = df[df["H"] == h].copy()
     if df.empty:
         raise HTTPException(status_code=404, detail=f"Brak forecast dla H={h}")
-    df = df.where(pd.notna(df), None)
-    return {"rows": df.to_dict(orient="records")}
+    return {"rows": _df_records(df)}
 
 
 # =========================================================
@@ -539,6 +605,8 @@ def api_forecast(h: int = Query(30, ge=1)):
 def api_artifacts(filename: str, run: Optional[str] = None):
     run_path = _resolve_run(run)
     p = (run_path / filename).resolve()
+    if not p.exists():
+        p = (_run_data_dir(run_path) / filename).resolve()
 
     if not str(p).startswith(str(run_path.resolve())):
         raise HTTPException(status_code=400, detail="Invalid path")

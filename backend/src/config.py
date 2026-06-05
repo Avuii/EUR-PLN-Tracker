@@ -1,4 +1,3 @@
-# src/config.py
 from __future__ import annotations
 import warnings
 from pandas.errors import PerformanceWarning
@@ -300,12 +299,21 @@ def save_run_config(cfg: dict[str, Any], run_dir: Path) -> None:
     )
 
 
+def get_run_data_dir(run_dir: str | Path, cfg: dict[str, Any] | None = None) -> Path:
+    run_dir = resolve_path(run_dir)
+    data_dir_name = Path((cfg or DEFAULT_CONFIG)["output"].get("data_dir", "data")).name
+    p = run_dir / data_dir_name
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
 def make_run_dir(runs_dir: str | Path) -> Path:
     runs_dir = resolve_path(runs_dir)
     ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     run_dir = runs_dir / ts
     plots_dir_name = DEFAULT_CONFIG["output"]["plots_dir_name"]
     (run_dir / plots_dir_name).mkdir(parents=True, exist_ok=True)
+    get_run_data_dir(run_dir)
     return run_dir
 
 
