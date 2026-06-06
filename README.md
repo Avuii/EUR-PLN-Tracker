@@ -261,9 +261,9 @@ The frontend is divided into several tabs.
 
 ### Logs
 
-| Logs |
-|---|
-| <img src="screenshots/logs.png" alt="Logs tab light mode" width="900" /> |
+| Light mode | Dark mode |
+|---|---|
+| <img src="screenshots/logs.png" alt="Logs tab light mode" width="900" /> | <img src="screenshots/logsdark.png" alt="Logs tab light mode" width="900" /> |
 
 ---
 
