@@ -76,7 +76,55 @@ function histogram(values: number[], bins = 24) {
   });
 }
 
-export default function ModelErrorsTab() {
+type Lang = "pl" | "en";
+
+type Props = {
+  lang: Lang;
+};
+
+const text = {
+  pl: {
+    title: "Analiza błędów",
+    horizon: "Horyzont",
+    model: "Model",
+    sampleLimit: "Limit próbek testowych",
+    residualStats: "Statystyki reszt",
+    mean: "Średnia",
+    min: "Min",
+    max: "Max",
+    error: "Błąd",
+    errorLabel: "Błąd (pred - true)",
+    date: "Data",
+    count: "Liczność",
+    topErrors: "Top 10 największych błędów",
+    pred: "Pred",
+    absError: "|Error|",
+    loading: "Ładowanie…",
+    noData: "Brak danych.",
+  },
+  en: {
+    title: "Error analysis",
+    horizon: "Horizon",
+    model: "Model",
+    sampleLimit: "Test sample limit",
+    residualStats: "Residual statistics",
+    mean: "Mean",
+    min: "Min",
+    max: "Max",
+    error: "Error",
+    errorLabel: "Error (pred - true)",
+    date: "Date",
+    count: "Count",
+    topErrors: "Top 10 largest errors",
+    pred: "Pred",
+    absError: "|Error|",
+    loading: "Loading…",
+    noData: "No data.",
+  },
+};
+
+export default function ModelErrorsTab({ lang }: Props) {
+  const t = text[lang];
   const [horizon, setHorizon] = useState<number>(30);
   const [modelKey, setModelKey] = useState<string>("pred_best");
   const [limit, setLimit] = useState<number>(260);
@@ -144,13 +192,13 @@ export default function ModelErrorsTab() {
     <div className="app-page space-y-6">
       <Card className="premium-card rounded-3xl">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl text-white">Analiza błędów</CardTitle>
+          <CardTitle className="text-xl text-white">{t.title}</CardTitle>
         </CardHeader>
 
         <CardContent className="app-page space-y-6">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
             <div>
-              <div className="mb-1 text-sm text-slate-300">Horyzont</div>
+              <div className="mb-1 text-sm text-slate-300">{t.horizon}</div>
               <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v))}>
                 <SelectTrigger className="app-select-trigger">
                   <SelectValue />
@@ -166,7 +214,7 @@ export default function ModelErrorsTab() {
             </div>
 
             <div>
-              <div className="mb-1 text-sm text-slate-300">Model</div>
+              <div className="mb-1 text-sm text-slate-300">{t.model}</div>
               <Select value={modelKey} onValueChange={setModelKey}>
                 <SelectTrigger className="app-select-trigger">
                   <SelectValue />
@@ -182,7 +230,7 @@ export default function ModelErrorsTab() {
             </div>
 
             <div>
-              <div className="mb-1 text-sm text-slate-300">Limit próbek testowych</div>
+              <div className="mb-1 text-sm text-slate-300">{t.sampleLimit}</div>
               <Select value={String(limit)} onValueChange={(v) => setLimit(Number(v))}>
                 <SelectTrigger className="app-select-trigger">
                   <SelectValue />
@@ -198,19 +246,19 @@ export default function ModelErrorsTab() {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-black/25 p-4">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Reszty ({modelLabel})</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.residualStats} ({modelLabel})</div>
               <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-slate-200">
-                <div>Średnia: <span className="font-semibold text-white">{formatNum(stats.mean)}</span></div>
+                <div>{t.mean}: <span className="font-semibold text-white">{formatNum(stats.mean)}</span></div>
                 <div>σ: <span className="font-semibold text-white">{formatNum(stats.std)}</span></div>
-                <div>Min: <span className="font-semibold text-white">{formatNum(stats.min)}</span></div>
-                <div>Max: <span className="font-semibold text-white">{formatNum(stats.max)}</span></div>
+                <div>{t.min}: <span className="font-semibold text-white">{formatNum(stats.min)}</span></div>
+                <div>{t.max}: <span className="font-semibold text-white">{formatNum(stats.max)}</span></div>
               </div>
             </div>
           </div>
 
           {err ? (
             <div className="rounded-3xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              Błąd: {err}
+              {t.error}: {err}
             </div>
           ) : null}
 
@@ -222,15 +270,15 @@ export default function ModelErrorsTab() {
                 <YAxis domain={yDomain} tick={{ fontSize: 12, fill: "#9ca3af" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#070b16", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", color: "#fff" }}
-                  formatter={(val: any, name: any) => [formatNum(val), name === "error" ? "Błąd (pred - true)" : String(name)]}
-                  labelFormatter={(l) => `Data: ${l}`}
+                  formatter={(val: any, name: any) => [formatNum(val), name === "error" ? t.errorLabel : String(name)]}
+                  labelFormatter={(l) => `${t.date}: ${l}`}
                 />
                 <Legend wrapperStyle={{ color: "#e5e7eb" }} />
                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.35)" strokeOpacity={0.7} />
                 <ReferenceLine y={stats.mean} stroke="rgba(255,255,255,0.3)" strokeOpacity={0.5} strokeDasharray="5 5" />
                 <ReferenceLine y={stats.mean + 2 * stats.std} stroke="rgba(255,255,255,0.25)" strokeOpacity={0.4} strokeDasharray="6 6" />
                 <ReferenceLine y={stats.mean - 2 * stats.std} stroke="rgba(255,255,255,0.25)" strokeOpacity={0.4} strokeDasharray="6 6" />
-                <Line type="monotone" dataKey="error" dot={false} strokeWidth={2.5} stroke="#22d3ee" name="Błąd (pred - true)" />
+                <Line type="monotone" dataKey="error" dot={false} strokeWidth={2.5} stroke="#22d3ee" name={t.errorLabel} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -242,32 +290,32 @@ export default function ModelErrorsTab() {
                 <XAxis dataKey="bin" tick={{ fontSize: 10, fill: "#9ca3af" }} interval={4} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
                 <YAxis tick={{ fontSize: 12, fill: "#9ca3af" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
                 <Tooltip contentStyle={{ backgroundColor: "#070b16", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", color: "#fff" }} />
-                <Bar dataKey="count" name="Liczność" fill="#22d3ee" />
+                <Bar dataKey="count" name={t.count} fill="#22d3ee" />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/25">
             <div className="border-b border-white/10 bg-black/35 px-4 py-3 text-sm font-medium text-white">
-              Top 10 największych błędów
+              {t.topErrors}
             </div>
             <div className="max-h-[320px] overflow-auto">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-black/60 backdrop-blur-xl">
                   <tr className="text-left">
-                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Data</th>
-                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Pred</th>
-                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Error</th>
-                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">|Error|</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">{t.date}</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">{t.pred}</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">{t.error}</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">{t.absError}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td className="px-3 py-3 text-slate-400" colSpan={4}>Ładowanie…</td></tr>
+                    <tr><td className="px-3 py-3 text-slate-400" colSpan={4}>{t.loading}</td></tr>
                   ) : null}
 
                   {!loading && !top10.length ? (
-                    <tr><td className="px-3 py-3 text-slate-400" colSpan={4}>Brak danych.</td></tr>
+                    <tr><td className="px-3 py-3 text-slate-400" colSpan={4}>{t.noData}</td></tr>
                   ) : null}
 
                   {!loading && top10.map((r, i) => (
