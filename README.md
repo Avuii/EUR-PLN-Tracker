@@ -227,13 +227,9 @@ The frontend is divided into several tabs.
 
 ### Data
 
-| Data overview | Recent records |
-|---|---|
-| <img src="screenshots/data.png" alt="Data tab dark mode" width="480" /> | <img src="screenshots/data2.png" alt="Recent records table dark mode" width="480" /> |
-
-| Light mode |
-|---|
-| <img src="screenshots/datalight.png" alt="Data tab light mode" width="900" /> |
+| Data overview | Recent records | Light mode |
+|---|---|---|
+| <img src="screenshots/data.png" alt="Data tab dark mode" width="480" /> | <img src="screenshots/data2.png" alt="Recent records table dark mode" width="480" /> | <img src="screenshots/datalight.png" alt="Data tab light mode" width="900" /> |
 
 ### Forecasts
 
@@ -249,9 +245,9 @@ The frontend is divided into several tabs.
 
 ### Error analysis
 
-| Error analysis |
-|---|
-| <img src="screenshots/erroranalys.png" alt="Error analysis tab" width="900" /> |
+| Error analysis | Error analysis |
+|---|---|
+| <img src="screenshots/erroranalys.png" alt="Error analysis tab" width="900" /> | <img src="screenshots/erroranalys2.png" alt="Error analysis tab" width="900" />|
 
 ### Models
 
