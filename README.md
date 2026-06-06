@@ -245,9 +245,9 @@ The frontend is divided into several tabs.
 
 ### Error analysis
 
-| Error analysis | Error analysis |
+| Prediction errors over time | Error distribution |
 |---|---|
-| <img src="screenshots/erroranalys.png" alt="Error analysis tab" width="900" /> | <img src="screenshots/erroranalys2.png" alt="Error analysis tab" width="900" />|
+| <img src="screenshots/erroranalys.png" alt="Line chart showing prediction errors over time for the selected model" width="900" /> | <img src="screenshots/erroranalys2.png" alt="Histogram of prediction errors with a table of the largest errors" width="900" /> |
 
 ### Models
 
