@@ -4,7 +4,55 @@ import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { api } from "../lib/api";
 
-const MODEL_META: Record<string, { family: string; short: string; description: string; accent: string }> = {
+type Lang = "pl" | "en";
+
+type Props = {
+  lang: Lang;
+};
+
+type ModelMeta = {
+  family: string;
+  short: string;
+  description: string;
+  accent: string;
+};
+
+const TEXT = {
+  pl: {
+    title: "Modele",
+    horizon: "Horyzont",
+    config: "Konfiguracja",
+    pair: "Para",
+    bestModel: "Best model",
+    selectedByValidation: "Wybrany na podstawie walidacji dla",
+    modelsInConfig: "Modele w konfiguracji",
+    modelFallbackFamily: "Model",
+    modelFallbackDescription: "Model zwrócony przez aktualny pipeline eksperymentu.",
+    bestOnVal: "best on val",
+    validation: "Validation",
+    test: "Test",
+    rawMetrics: "Surowe metryki",
+    noMetrics: "Brak metryk modeli. Uruchom pipeline albo sprawdź, czy backend widzi najnowszy folder w runs.",
+  },
+  en: {
+    title: "Models",
+    horizon: "Horizon",
+    config: "Configuration",
+    pair: "Pair",
+    bestModel: "Best model",
+    selectedByValidation: "Selected based on validation for",
+    modelsInConfig: "Models in configuration",
+    modelFallbackFamily: "Model",
+    modelFallbackDescription: "Model returned by the current experiment pipeline.",
+    bestOnVal: "best on val",
+    validation: "Validation",
+    test: "Test",
+    rawMetrics: "Raw metrics",
+    noMetrics: "No model metrics. Run the pipeline or check whether the backend can see the latest folder in runs.",
+  },
+};
+
+const MODEL_META_PL: Record<string, ModelMeta> = {
   Naive: {
     family: "Baseline",
     short: "Persistence",
@@ -79,6 +127,57 @@ const MODEL_META: Record<string, { family: string; short: string; description: s
   },
 };
 
+const MODEL_META_EN: Record<string, ModelMeta> = {
+  Naive: {
+    ...MODEL_META_PL.Naive,
+    description: "The simplest reference point: assumes the future rate will be equal to the latest known value.",
+  },
+  SMA: {
+    ...MODEL_META_PL.SMA,
+    description: "A forecast based on a moving average of recent observations.",
+  },
+  EMA: {
+    ...MODEL_META_PL.EMA,
+    description: "Exponential smoothing that gives more weight to newer observations.",
+  },
+  Ridge: {
+    ...MODEL_META_PL.Ridge,
+    description: "A linear model with L2 regularization. It stabilizes coefficients when many lagged and rolling features are used.",
+  },
+  ElasticNet: {
+    ...MODEL_META_PL.ElasticNet,
+    description: "A linear model combining L1 and L2 regularization. It can reduce the impact of weaker features.",
+  },
+  RandomForest: {
+    ...MODEL_META_PL.RandomForest,
+    description: "An ensemble of many decision trees. It works well as a strong nonlinear model for tabular data.",
+  },
+  ExtraTrees: {
+    ...MODEL_META_PL.ExtraTrees,
+    description: "Similar to RandomForest, but with more randomness in splits, which can improve generalization.",
+  },
+  HistGB: {
+    ...MODEL_META_PL.HistGB,
+    description: "Histogram-based gradient boosting. New trees are added to correct errors made by previous ones.",
+  },
+  SARIMAX: {
+    ...MODEL_META_PL.SARIMAX,
+    description: "A classical time-series model used as an additional comparison point.",
+  },
+  MLPRegressor: {
+    ...MODEL_META_PL.MLPRegressor,
+    description: "A simple neural network for tabular regression. In this project it acts as an additional benchmark.",
+  },
+  XGBoost: {
+    ...MODEL_META_PL.XGBoost,
+    description: "An optional boosting backend, active only if enabled in the configuration and available in the environment.",
+  },
+  LightGBM: {
+    ...MODEL_META_PL.LightGBM,
+    description: "An optional boosting backend, active only if enabled in the configuration and available in the environment.",
+  },
+};
+
 function fmt4(x: any) {
   const n = Number(x);
   if (!Number.isFinite(n)) return "—";
@@ -107,7 +206,19 @@ function getHorizons(metrics: any) {
     .sort((a, b) => a - b);
 }
 
-export default function ModelsTab() {
+function getModelMeta(name: string, lang: Lang, fallbackFamily: string, fallbackDescription: string): ModelMeta {
+  const source = lang === "pl" ? MODEL_META_PL : MODEL_META_EN;
+
+  return source[name] ?? {
+    family: fallbackFamily,
+    short: name,
+    description: fallbackDescription,
+    accent: "border-white/10 bg-white/5 text-white/80",
+  };
+}
+
+export default function ModelsTab({ lang }: Props) {
+  const t = TEXT[lang];
   const [results, setResults] = useState<any>(null);
   const [horizon, setHorizon] = useState<number>(30);
 
@@ -137,13 +248,13 @@ export default function ModelsTab() {
     <div className="app-page space-y-6">
       <Card className="premium-card rounded-3xl">
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl text-white">Modele</CardTitle>
+          <CardTitle className="text-xl text-white">{t.title}</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-5 text-sm text-white/80">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-3xl border border-white/10 bg-black/25 p-4">
-              <div className="mb-2 text-white font-medium">Horyzont</div>
+              <div className="mb-2 text-white font-medium">{t.horizon}</div>
               <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v))}>
                 <SelectTrigger className="app-select-trigger">
                   <SelectValue />
@@ -159,26 +270,26 @@ export default function ModelsTab() {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-black/25 p-4">
-              <div className="mb-2 text-white font-medium">Konfiguracja</div>
+              <div className="mb-2 text-white font-medium">{t.config}</div>
               <div className="space-y-2 text-slate-300">
-                <div><span className="text-slate-400">Para:</span> <span className="text-white">{runConfig?.pair ?? results?.summary?.pair ?? "EUR/PLN"}</span></div>
+                <div><span className="text-slate-400">{t.pair}:</span> <span className="text-white">{runConfig?.pair ?? results?.summary?.pair ?? "EUR/PLN"}</span></div>
                 <div><span className="text-slate-400">Window mode:</span> <span className="text-white">{runConfig?.window_mode ?? "—"}</span></div>
                 <div><span className="text-slate-400">Seed:</span> <span className="text-white">{runConfig?.seed ?? "—"}</span></div>
               </div>
             </div>
 
             <div className="rounded-3xl border border-cyan-400/20 bg-cyan-400/10 p-4 shadow-[0_0_30px_rgba(34,211,238,0.08)]">
-              <div className="mb-2 text-white font-medium">Best model</div>
+              <div className="mb-2 text-white font-medium">{t.bestModel}</div>
               <div className="text-2xl font-semibold text-white">{bestModel}</div>
-              <div className="mt-2 text-xs text-cyan-100/75">Wybrany na podstawie walidacji dla H={horizon}</div>
+              <div className="mt-2 text-xs text-cyan-100/75">{t.selectedByValidation} H={horizon}</div>
             </div>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-black/25 p-4">
-            <div className="mb-3 text-white font-medium">Modele w konfiguracji</div>
+            <div className="mb-3 text-white font-medium">{t.modelsInConfig}</div>
             <div className="flex flex-wrap gap-2">
-              {(features.length ? features : Object.keys(MODEL_META)).map((f: string) => (
-                <Badge key={f} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-slate-200">
+              {(features.length ? features : Object.keys(MODEL_META_PL)).map((f: string) => (
+                <Badge key={f} className="model-family-badge rounded-full px-3 py-1">
                   {f}
                 </Badge>
               ))}
@@ -189,12 +300,7 @@ export default function ModelsTab() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         {models.length ? models.map(([name, value]: any) => {
-          const meta = MODEL_META[name] ?? {
-            family: "Model",
-            short: name,
-            description: "Model zwrócony przez aktualny pipeline eksperymentu.",
-            accent: "border-white/10 bg-white/5 text-white/80",
-          };
+          const meta = getModelMeta(name, lang, t.modelFallbackFamily, t.modelFallbackDescription);
           const val = value?.val ?? null;
           const test = value?.test ?? null;
           const isBest = bestModel === name;
@@ -205,8 +311,8 @@ export default function ModelsTab() {
                 <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg text-white">{name}</CardTitle>
                   <Badge className={`border ${meta.accent}`}>{meta.short}</Badge>
-                  <Badge className="border border-white/10 bg-white/5 text-white/70">{meta.family}</Badge>
-                  {isBest ? <Badge className="border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">best on val</Badge> : null}
+                  <Badge className="model-family-badge">{meta.family}</Badge>
+                  {isBest ? <Badge className="border border-cyan-400/20 bg-cyan-400/10 text-cyan-200">{t.bestOnVal}</Badge> : null}
                 </div>
               </CardHeader>
 
@@ -215,7 +321,7 @@ export default function ModelsTab() {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-3xl border border-white/10 bg-black/25 p-3">
-                    <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">Validation</div>
+                    <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">{t.validation}</div>
                     <div className="space-y-1 text-slate-300">
                       <div>MAE: <span className="font-medium text-white">{fmt4(val?.mae)}</span></div>
                       <div>RMSE: <span className="font-medium text-white">{fmt4(val?.rmse)}</span></div>
@@ -225,7 +331,7 @@ export default function ModelsTab() {
                   </div>
 
                   <div className="rounded-3xl border border-white/10 bg-black/25 p-3">
-                    <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">Test</div>
+                    <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">{t.test}</div>
                     <div className="space-y-1 text-slate-300">
                       <div>MAE: <span className="font-medium text-white">{fmt4(test?.mae)}</span></div>
                       <div>RMSE: <span className="font-medium text-white">{fmt4(test?.rmse)}</span></div>
@@ -236,7 +342,7 @@ export default function ModelsTab() {
                 </div>
 
                 <div className="rounded-3xl border border-white/10 bg-black/25 p-3">
-                  <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">Surowe metryki</div>
+                  <div className="mb-2 text-xs uppercase tracking-wider text-slate-400">{t.rawMetrics}</div>
                   <pre className="max-h-52 overflow-auto whitespace-pre-wrap text-xs text-slate-200">{safeJson(value)}</pre>
                 </div>
               </CardContent>
@@ -244,7 +350,7 @@ export default function ModelsTab() {
           );
         }) : (
           <Card className="premium-card rounded-3xl p-5 text-sm text-slate-300">
-            Brak metryk modeli. Uruchom pipeline albo sprawdź, czy backend widzi najnowszy folder w runs.
+            {t.noMetrics}
           </Card>
         )}
       </div>

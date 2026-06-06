@@ -59,16 +59,33 @@ def _fetch_range(table: str, code: str, start: date, end: date) -> List[Tuple[da
     while cur <= end:
         chunk_end = min(end, cur + timedelta(days=MAX_DAYS_PER_REQ - 1))
         url = _url(table, code, cur, chunk_end)
-        log.info(f"GET {cur.isoformat()}..{chunk_end.isoformat()}")
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
 
-        js = r.json()
-        rates = js.get("rates", [])
-        for it in rates:
-            d = date.fromisoformat(it["effectiveDate"])
-            v = float(it["mid"])
-            out.append((d, v))
+        log.info(f"GET {cur.isoformat()}..{chunk_end.isoformat()}")
+
+        try:
+            r = requests.get(url, timeout=30)
+
+            if r.status_code == 404:
+                log.warning(
+                    f"NBP nie ma danych dla zakresu {cur.isoformat()}..{chunk_end.isoformat()}. Pomijam."
+                )
+                cur = chunk_end + timedelta(days=1)
+                continue
+
+            r.raise_for_status()
+
+            js = r.json()
+            rates = js.get("rates", [])
+
+            for it in rates:
+                d = date.fromisoformat(it["effectiveDate"])
+                v = float(it["mid"])
+                out.append((d, v))
+
+        except requests.exceptions.RequestException as e:
+            log.warning(
+                f"Błąd pobierania zakresu {cur.isoformat()}..{chunk_end.isoformat()}: {e}. Pomijam."
+            )
 
         cur = chunk_end + timedelta(days=1)
 
@@ -277,17 +294,34 @@ def main() -> None:
         else:
             log.info(f"Incremental fetch from {fetch_start.isoformat()}..{end.isoformat()}")
             new_rows = _fetch_range(table, currency, fetch_start, end)
-            new_df = pd.DataFrame(new_rows, columns=["date", "value"])
-            daily_df = pd.concat([existing, new_df], ignore_index=True)
-            daily_df = daily_df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+
+            if new_rows:
+                new_df = pd.DataFrame(new_rows, columns=["date", "value"])
+                daily_df = pd.concat([existing, new_df], ignore_index=True)
+                daily_df = daily_df.sort_values("date").drop_duplicates(subset=["date"]).reset_index(drop=True)
+            else:
+                log.warning("NBP nie zwrócił nowych rekordów. Używam istniejących danych.")
+
+                daily_df = existing.copy()
+
             daily_df = daily_df[
                 (pd.to_datetime(daily_df["date"]).dt.date >= start)
                 & (pd.to_datetime(daily_df["date"]).dt.date <= end)
-            ].reset_index(drop=True)
+                ].reset_index(drop=True)
     else:
         log.info("Full fetch (refresh or empty file).")
         rows = _fetch_range(table, currency, start, end)
-        daily_df = pd.DataFrame(rows, columns=["date", "value"]).sort_values("date").reset_index(drop=True)
+
+        if not rows and len(existing) > 0:
+            log.warning("NBP nie zwrócił danych. Używam istniejących danych.")
+            daily_df = existing.copy()
+        else:
+            daily_df = pd.DataFrame(rows, columns=["date", "value"]).sort_values("date").reset_index(drop=True)
+
+        daily_df = daily_df[
+            (pd.to_datetime(daily_df["date"]).dt.date >= start)
+            & (pd.to_datetime(daily_df["date"]).dt.date <= end)
+            ].reset_index(drop=True)
 
     _save_daily(daily_canonical, daily_df)
 

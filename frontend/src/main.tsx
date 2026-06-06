@@ -3,7 +3,10 @@ import ReactDOM from "react-dom/client";
 import App from "./app/App";
 import "./styles/index.css";
 
-document.documentElement.classList.add("dark");
+const savedTheme = localStorage.getItem("theme") ?? "dark";
+
+document.documentElement.classList.remove("dark", "light");
+document.documentElement.classList.add(savedTheme);
 
 const rootElement = document.getElementById("root");
 
