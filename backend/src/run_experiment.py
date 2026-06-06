@@ -1,4 +1,3 @@
-# src/run_experiment.py
 from __future__ import annotations
 import warnings
 from pandas.errors import PerformanceWarning
@@ -13,7 +12,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from .config import load_config, make_run_dir, resolve_path, save_run_config
+from .config import get_run_data_dir, load_config, make_run_dir, resolve_path, save_run_config
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -177,6 +176,7 @@ def main() -> None:
         run_path = resolve_path(args.run)
         run_path.mkdir(parents=True, exist_ok=True)
         (run_path / cfg["output"].get("plots_dir_name", "plots")).mkdir(parents=True, exist_ok=True)
+        get_run_data_dir(run_path, cfg)
 
     save_run_config(cfg, run_path)
 

@@ -1,4 +1,3 @@
-# src/build_dataset.py
 from __future__ import annotations
 import warnings
 from pandas.errors import PerformanceWarning
@@ -15,6 +14,7 @@ import pandas as pd
 
 from .config import (
     get_data_dir,
+    get_run_data_dir,
     get_effective_window_for_horizon,
     load_config,
     make_run_dir,
@@ -122,8 +122,12 @@ def _find_source_csv(cfg: dict[str, Any], run_dir: Path | None, logger: logging.
     candidates: list[Path] = []
 
     if run_dir is not None:
+        run_data_dir = get_run_data_dir(run_dir, cfg)
         candidates.extend(
             [
+                run_data_dir / f"raw_{pair}.csv",
+                run_data_dir / f"{pair}.csv",
+                run_data_dir / f"{currency.lower()}_a.csv",
                 run_dir / f"raw_{pair}.csv",
                 run_dir / f"{pair}.csv",
                 run_dir / f"{currency.lower()}_a.csv",
@@ -264,6 +268,7 @@ def main(config_path: str = "configs/config.json", run_dir: str | None = None) -
         run_path = resolve_path(run_dir)
         run_path.mkdir(parents=True, exist_ok=True)
         (run_path / cfg["output"].get("plots_dir_name", "plots")).mkdir(parents=True, exist_ok=True)
+        get_run_data_dir(run_path, cfg)
         if not (run_path / "config.json").exists():
             save_run_config(cfg, run_path)
 
@@ -288,12 +293,19 @@ def main(config_path: str = "configs/config.json", run_dir: str | None = None) -
         f"Source rows={len(raw_df)} | range={raw_df['date'].min().date()}..{raw_df['date'].max().date()}"
     )
 
-    data_dir = get_data_dir(cfg)
-    data_dir.mkdir(parents=True, exist_ok=True)
+    run_data_dir = get_run_data_dir(run_path, cfg)
+    raw_snapshot_path = run_data_dir / f"raw_{pair}.csv"
+    raw_df.to_csv(raw_snapshot_path, index=False)
+    logger.info(f"Saved run raw snapshot: {raw_snapshot_path}")
+
+    global_data_dir = get_data_dir(cfg)
+    global_data_dir.mkdir(parents=True, exist_ok=True)
+    data_dir = get_run_data_dir(run_path, cfg)
 
     manifest: dict[str, Any] = {
         "pair": pair,
-        "source_csv": str(src_csv),
+        "source_csv": str(raw_snapshot_path),
+        "original_source_csv": str(src_csv),
         "window_mode": cfg.get("window_mode", "fixed"),
         "window_W_default": int(cfg.get("window_W", 60)),
         "rolling_windows": rolling_windows,
@@ -323,9 +335,15 @@ def main(config_path: str = "configs/config.json", run_dir: str | None = None) -
         out_path = data_dir / f"ds_H{H}.csv"
         ds.to_csv(out_path, index=False)
 
+        legacy_out_path = global_data_dir / f"ds_H{H}.csv"
+        if legacy_out_path != out_path:
+            ds.to_csv(legacy_out_path, index=False)
+
         logger.info(
             f"Saved {out_path} | rows={len(ds)} | cols={ds.shape[1]} | W={W}"
         )
+        if legacy_out_path != out_path:
+            logger.info(f"Saved legacy dataset copy: {legacy_out_path}")
 
         manifest["datasets"][f"H{H}"] = {
             "path": str(out_path),

@@ -93,3 +93,12 @@ frontend/tsconfig.tsbuildinfo
 !screenshots/*.png
 !screenshots/*.jpg
 !screenshots/*.jpeg
+
+node_modules/*
+.vite/
+pycache/
+__pycache__/
+*.log
+*.tmp
+
+
