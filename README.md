@@ -1,10 +1,21 @@
-# 💶 EUR/PLN Tracker
+<p align="center">
+  <img src="DEMO/public/android-chrome-512x512.png" alt="EUR/PLN Tracker logo" width="110" />
+</p>
+
+<h1 align="center">EUR/PLN Tracker</h1>
 
 <p align="center">
-  <strong>Machine learning dashboard for fetching NBP exchange rates, training forecasting models and analyzing EUR/PLN predictions.</strong>
+  <strong>End-to-end forecasting dashboard for EUR/PLN exchange rates.</strong>
 </p>
 
 <p align="center">
+  Fetch NBP data → build time-series datasets → train models → compare errors → visualize forecasts
+</p>
+
+<p align="center">
+  <a href="https://avuii.github.io/EUR-PLN-Tracker/">
+    <img src="https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-111827?style=for-the-badge&logo=githubpages&logoColor=white" />
+  </a>
   <img src="https://img.shields.io/badge/Python-Backend-3776AB?style=for-the-badge&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/FastAPI-API-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
   <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=111827" />
@@ -14,14 +25,21 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/Podsumowanie.png" alt="EUR PLN Tracker dashboard" width="720" />
+  <a href="https://avuii.github.io/EUR-PLN-Tracker/">
+    <strong>Open Live Demo</strong>
+  </a>
+</p>
+
+<p align="center">
+  <img src="screenshots/Summary.png" alt="EUR/PLN Tracker dashboard" width="820" />
 </p>
 
 ---
 
 ## 📚 Table of Contents
-
-- [Overview](#overview)
+- [What is this](#what-is-this)
+- [Live demo](#live-demo)
+- [Project workflow](#project-workflow)
 - [Features](#features)
 - [Machine Learning Pipeline](#machine-learning-pipeline)
 - [Frontend Dashboard](#frontend-dashboard)
@@ -31,29 +49,64 @@
 - [Getting Started](#getting-started)
 - [API Endpoints](#api-endpoints)
 - [Project Structure](#project-structure)
-- [Author](#author)
+
+
+---
+<a id="what-is-this"></a>
+## ✨ What is this?
+
+**EUR/PLN Tracker** is a full-stack machine learning dashboard for analyzing and forecasting the EUR/PLN exchange rate.
+
+The application fetches historical exchange rates from the **NBP API**, builds time-series datasets, trains multiple forecasting models and visualizes the results in an interactive React dashboard.
+
+It helps compare different forecasting approaches, track prediction quality and inspect model errors across multiple forecast horizons.
+
+The project includes:
+
+- a **Python + FastAPI backend** for data fetching, dataset building, model training and API access,
+- a **React + TypeScript frontend** for charts, forecasts, metrics, logs and model comparison,
+- a **GitHub Pages demo** with mocked data, so the dashboard can be previewed without running the backend locally.
+
+---
+<a id="live-demo"></a>
+## 🚀 Live Demo
+
+A static demo version of the dashboard is available here:
+
+<p align="center">
+  <a href="https://avuii.github.io/EUR-PLN-Tracker/">
+    <strong>👉 Open EUR/PLN Tracker Demo</strong>
+  </a>
+</p>
+
+The demo uses mocked data and runs directly in the browser.
+
+The full local version uses the Python backend to fetch real NBP exchange rates, train models, generate forecasts and expose results through the FastAPI.
 
 ---
 
-<a id="overview"></a>
-## 📌 Overview
+<a id="project-workflow"></a>
+## 🔄 Project Workflow
 
-**EUR/PLN Tracker** is a forecasting dashboard for analyzing and predicting the EUR/PLN exchange rate.
+The application follows an end-to-end forecasting workflow:
 
-The application fetches historical exchange rate data from the **NBP API**, builds time-series datasets, trains multiple forecasting models and presents the results in a React dashboard.
+```text
+NBP API
+  ↓
+historical EUR/PLN data
+  ↓
+time-series dataset with lag, rolling and calendar features
+  ↓
+model training and evaluation
+  ↓
+forecast generation
+  ↓
+React dashboard with charts, metrics and logs
+```
 
-The main goal of the project is to create an end-to-end machine learning workflow:
+The backend handles data processing, model training and API endpoints, while the frontend focuses on presenting the results in a readable dashboard.  
 
-- download exchange rate data,
-- build datasets for different forecast horizons,
-- train and compare several models,
-- analyze prediction errors,
-- display forecasts and metrics in a clean dashboard.
-
-The project consists of two main parts:
-
-- **Python backend** with FastAPI and ML pipeline,
-- **React frontend** with a dark glassmorphism dashboard.
+The dashboard is divided into sections for historical data, forecasts, model evaluation, error analysis, model details and pipeline logs.  
 
 ---
 
