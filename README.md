@@ -217,43 +217,53 @@ The frontend is divided into several tabs.
 ---
 
 <a id="screenshots"></a>
-## 📸 Screenshots
+## 🖼️ Screenshots
 
-### Dashboard
+### Summary
 
-| Podsumowanie |
-|---|
-| <img src="screenshots/Podsumowanie.png" alt="Dashboard summary" width="720" /> |
+| Dark mode | Light mode |
+|---|---|
+| <img src="screenshots/Summary.png" alt="Summary dashboard dark mode" width="480" /> | <img src="screenshots/Summarylight.png" alt="Summary dashboard light mode" width="480" /> |
 
 ### Data
 
-| Dane | Ostatnie rekordy |
+| Data overview | Recent records |
 |---|---|
-| <img src="screenshots/dane.png" alt="Historical data view" width="420" /> | <img src="screenshots/dane_ostatnierekordy.png" alt="Latest data records" width="420" /> |
+| <img src="screenshots/data.png" alt="Data tab dark mode" width="480" /> | <img src="screenshots/data2.png" alt="Recent records table dark mode" width="480" /> |
+
+| Light mode |
+|---|
+| <img src="screenshots/datalight.png" alt="Data tab light mode" width="900" /> |
+
+### Forecasts
+
+| Dark mode | Light mode |
+|---|---|
+| <img src="screenshots/forecasts.png" alt="Forecasts tab dark mode" width="480" /> | <img src="screenshots/forecastslight.png" alt="Forecasts tab light mode" width="480" /> |
 
 ### Evaluation
 
-| Ewaluacja |
-|---|
-| <img src="screenshots/ewaluacja.png" alt="Model evaluation view" width="720" /> |
-
-### Error Analysis
-
-| Analiza błędów | Analiza błędów - details |
+| Evaluation chart | Prediction scatter |
 |---|---|
-| <img src="screenshots/analizabledow.png" alt="Error analysis view" width="420" /> | <img src="screenshots/analizabledow2.png" alt="Detailed error analysis view" width="420" /> |
+| <img src="screenshots/evaluation.png" alt="Evaluation tab true vs predicted chart" width="480" /> | <img src="screenshots/evaluation2.png" alt="Evaluation tab scatter plot" width="480" /> |
+
+### Error analysis
+
+| Error analysis |
+|---|
+| <img src="screenshots/erroranalys.png" alt="Error analysis tab" width="900" /> |
 
 ### Models
 
-| Modele | Modele - details |
+| Dark mode | Light mode |
 |---|---|
-| <img src="screenshots/modele.png" alt="Models view" width="420" /> | <img src="screenshots/modele1.png" alt="Models details view" width="420" /> |
+| <img src="screenshots/models.png" alt="Models tab dark mode" width="480" /> | <img src="screenshots/modelslight.png" alt="Models tab light mode" width="480" /> |
 
 ### Logs
 
-| Logi | Logi - details |
-|---|---|
-| <img src="screenshots/logi.png" alt="Logs view" width="420" /> | <img src="screenshots/logi2.png" alt="Detailed logs view" width="420" /> |
+| Logs |
+|---|
+| <img src="screenshots/logs.png" alt="Logs tab light mode" width="900" /> |
 
 ---
 
