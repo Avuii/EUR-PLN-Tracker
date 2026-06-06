@@ -1,4 +1,16 @@
-# 💶 EUR/PLN Tracker
+<p align="center">
+  <img src="DEMO/public/android-chrome-512x512.png" alt="EUR/PLN Tracker logo" width="110" />
+</p>
+
+<h1 align="center">EUR/PLN Tracker</h1>
+
+<p align="center">
+  <strong>End-to-end machine learning dashboard for EUR/PLN exchange rate forecasting.</strong>
+</p>
+
+<p align="center">
+  Fetch NBP data → build time-series datasets → train models → compare errors → visualize forecasts
+</p>
 
 <p align="center">
   <strong>End-to-end forecasting dashboard for EUR/PLN exchange rates.</strong><br />
@@ -6,12 +18,15 @@
 </p>
 
 <p align="center">
+  <a href="https://avuii.github.io/EUR-PLN-Tracker/">
+    <img src="https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-111827?style=for-the-badge&logo=githubpages&logoColor=white" />
+  </a>
   <img src="https://img.shields.io/badge/Python-Backend-3776AB?style=for-the-badge&logo=python&logoColor=white" />
   <img src="https://img.shields.io/badge/FastAPI-API-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
   <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=111827" />
-  <img src="https://img.shields.io/badge/TypeScript-UI-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/Vite-Build-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/ML-Forecasting-22C55E?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/TypeScript-Frontend-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/ML-Forecasting-16A34A?style=for-the-badge" />
 </p>
 
 <p align="center">
@@ -19,7 +34,7 @@
 </p>
 
 ---
-
+<a id="what-is-this"></a>
 ## ✨ What is this?
 
 **EUR/PLN Tracker** is a web application for forecasting the EUR/PLN exchange rate.
@@ -34,6 +49,41 @@ It is built as a full-stack project:
 
 ---
 
+## 📚 Table of Contents
+
+- [What is this?](#what-is-this)
+- [Live Demo](#live-demo)
+- [Key Features](#key-features)
+- [Screenshots](#screenshots)
+- [Machine Learning Pipeline](#machine-learning-pipeline)
+- [Tech Stack](#tech-stack)
+- [Requirements](#requirements)
+- [Getting Started](#getting-started)
+- [API Endpoints](#api-endpoints)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Notes](#notes)
+
+---
+
+
+<a id="live-demo"></a>
+## 🚀 Live Demo
+
+A static demo version of the dashboard is available on GitHub Pages:
+
+<p align="center">
+  <a href="https://avuii.github.io/EUR-PLN-Tracker/">
+    <strong>👉 Open EUR/PLN Tracker Demo</strong>
+  </a>
+</p>
+
+The demo uses mocked data, so it can run directly in the browser without the Python backend or local API server.
+
+The full version of the project includes the backend pipeline for fetching NBP data, building datasets, training models and generating real forecasts.
+
+---
+<a id="key-features"></a>
 ## 🚀 Key Features
 
 ### 💱 Data pipeline
@@ -91,7 +141,7 @@ The frontend shows true vs predicted values, residuals, model comparison and the
 - Backend logs directly in the browser.
 
 ---
-
+<a id="screenshots"></a>
 ## 📸 Screenshots
 
 ### Summary
@@ -131,7 +181,7 @@ The frontend shows true vs predicted values, residuals, model comparison and the
 | <img src="screenshots/logs.png" alt="Logs dark mode" width="420" /> | <img src="screenshots/logi2.png" alt="Logs light mode" width="420" /> |
 
 ---
-
+<a id="machine-learning-pipeline"></a>
 ## 🧪 Machine Learning Pipeline
 
 The backend workflow is split into small scripts:
@@ -168,7 +218,7 @@ summary.json
 ```
 
 ---
-
+<a id="tech-stack"></a>
 ## 🛠️ Tech Stack
 
 | Area | Technology |
@@ -188,7 +238,7 @@ summary.json
 | Data source | NBP API |
 
 ---
-
+<a id="requirements"></a>
 ## ⚙️ Requirements
 
 - Python 3.10+
@@ -203,7 +253,7 @@ Recommended:
 - Windows Terminal or PowerShell
 
 ---
-
+<a id="getting-started"></a>
 ## 🚀 Getting Started
 
 ### 1. Clone the repository
@@ -269,7 +319,7 @@ http://127.0.0.1:4000
 ```
 
 ---
-
+<a id="api-endpoints"></a>
 ## 🔌 API Endpoints
 
 | Endpoint | Description |
@@ -286,7 +336,7 @@ http://127.0.0.1:4000
 | `GET /api/export/data.xlsx` | Export historical data to XLSX. |
 
 ---
-
+<a id="project-structure"></a>
 ## 📁 Project Structure
 
 ```text
@@ -330,7 +380,7 @@ EUR-PLN-Tracker/
 ```
 
 ---
-
+<a id="configuration"></a>
 ## 🧩 Configuration
 
 Main configuration file:
@@ -352,7 +402,7 @@ You can configure:
 - output directories.
 
 ---
-
+<a id="notes"></a>
 ## 📝 Notes
 - The frontend uses Vite proxy for `/api` requests to the local FastAPI backend.
 - The newest NBP quotation may be unavailable on weekends, holidays or before publication time. The pipeline can keep using the latest available data.
