@@ -24,9 +24,9 @@ function fmtDate(v: any) {
   return String(v).slice(0, 10);
 }
 
-function prettyModelLabel(key: string) {
+function prettyModelLabel(key: string, lang: Lang = "pl") {
   const map: Record<string, string> = {
-    best_value: "Best model",
+    best_value: lang === "pl" ? "Best model" : "Best model",
     baseline: "Baseline",
     naive: "Naive",
     sma: "SMA",
@@ -44,7 +44,49 @@ function prettyModelLabel(key: string) {
   return map[key] ?? key;
 }
 
-export default function ForecastTab() {
+type Lang = "pl" | "en";
+
+type Props = {
+  lang: Lang;
+};
+
+const text = {
+  pl: {
+    title: "Prognozy",
+    horizon: "Horyzont",
+    model: "Model",
+    forecastDate: "Data prognozy",
+    forecast: "Prognoza",
+    error: "Błąd",
+    selectedModel: "Wybrany model",
+    latestRate: "Ostatni kurs",
+    modelValues: "Wartości modeli dla",
+    value: "Wartość",
+    loading: "Ładowanie…",
+    noForecastData: "Brak danych prognozy. Uruchom pipeline.",
+    forecastChange: "Zmiana prognozowana",
+    bestModel: "Best model",
+  },
+  en: {
+    title: "Forecasts",
+    horizon: "Horizon",
+    model: "Model",
+    forecastDate: "Forecast date",
+    forecast: "Forecast",
+    error: "Error",
+    selectedModel: "Selected model",
+    latestRate: "Latest rate",
+    modelValues: "Model values for",
+    value: "Value",
+    loading: "Loading…",
+    noForecastData: "No forecast data. Run the pipeline.",
+    forecastChange: "Forecast change",
+    bestModel: "Best model",
+  },
+};
+
+export default function ForecastTab({ lang }: Props) {
+  const t = text[lang];
   const [horizon, setHorizon] = useState<number>(30);
   const [rows, setRows] = useState<ForecastRow[]>([]);
   const [modelKey, setModelKey] = useState<string>("best_value");
@@ -86,7 +128,7 @@ export default function ForecastTab() {
     const ordered = [...PREFERRED_MODELS, ...numericKeys.filter((k) => !PREFERRED_MODELS.includes(k))].filter(
       (k, i, arr) => numericKeys.includes(k) && arr.indexOf(k) === i
     );
-    return ordered.map((k) => ({ key: k, label: prettyModelLabel(k) }));
+    return ordered.map((k) => ({ key: k, label: prettyModelLabel(k, lang) }));
   }, [bestRow]);
 
   useEffect(() => {
@@ -103,7 +145,7 @@ export default function ForecastTab() {
   }, [bestRow, modelOptions]);
 
   const yDomain = useMemo(() => yDomainFromData(chartData, ["value"], 0.06, 0.01), [chartData]);
-  const selectedLabel = prettyModelLabel(modelKey);
+  const selectedLabel = prettyModelLabel(modelKey, lang);
   const selectedValue = bestRow?.[modelKey] ?? null;
   const latestValue = bestRow?.latest_value ?? null;
   const forecastChange = isNumberLike(selectedValue) && isNumberLike(latestValue) ? Number(selectedValue) - Number(latestValue) : null;
@@ -112,13 +154,13 @@ export default function ForecastTab() {
     <div className="app-page space-y-6">
       <Card className="app-card rounded-3xl">
         <CardHeader className="pb-2">
-          <CardTitle className="text-2xl text-white">Prognozy</CardTitle>
+          <CardTitle className="text-2xl text-white">{t.title}</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-5">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_1fr]">
             <div>
-              <div className="mb-1 text-sm text-slate-300">Horyzont</div>
+              <div className="mb-1 text-sm text-slate-300">{t.horizon}</div>
               <Select value={String(horizon)} onValueChange={(v) => setHorizon(Number(v))}>
                 <SelectTrigger className="app-select-trigger h-11">
                   <SelectValue />
@@ -130,7 +172,7 @@ export default function ForecastTab() {
             </div>
 
             <div>
-              <div className="mb-1 text-sm text-slate-300">Model</div>
+              <div className="mb-1 text-sm text-slate-300">{t.model}</div>
               <Select value={modelKey} onValueChange={setModelKey}>
                 <SelectTrigger className="app-select-trigger h-11">
                   <SelectValue />
@@ -142,37 +184,37 @@ export default function ForecastTab() {
             </div>
 
             <div className="app-kpi p-4">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Data prognozy</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.forecastDate}</div>
               <div className="mt-2 text-xl font-semibold text-white">{fmtDate(bestRow?.date ?? bestRow?.forecast_target_date)}</div>
             </div>
 
             <div className="app-kpi p-4">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Prognoza</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.forecast}</div>
               <div className="mt-2 text-xl font-semibold text-white">{formatNum(selectedValue)} zł</div>
             </div>
           </div>
 
           {err ? (
             <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-              Błąd: {err}
+              {t.error}: {err}
             </div>
           ) : null}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div className="app-kpi p-5">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Wybrany model</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.selectedModel}</div>
               <div className="mt-3 text-2xl font-semibold text-white">{selectedLabel}</div>
             </div>
             <div className="app-kpi p-5">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Ostatni kurs</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.latestRate}</div>
               <div className="mt-3 text-2xl font-semibold text-white">{formatNum(latestValue)} zł</div>
             </div>
             <div className="app-kpi p-5">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Zmiana prognozowana</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.forecastChange}</div>
               <div className={`mt-3 text-2xl font-semibold ${forecastChange != null && forecastChange < 0 ? "text-red-300" : "text-emerald-300"}`}>{formatNum(forecastChange)} zł</div>
             </div>
             <div className="app-kpi p-5">
-              <div className="text-xs uppercase tracking-wider text-slate-400">Best model</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400">{t.bestModel}</div>
               <div className="mt-3 text-2xl font-semibold text-white">{String(bestRow?.best_model ?? "—")}</div>
             </div>
           </div>
@@ -183,25 +225,25 @@ export default function ForecastTab() {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                 <XAxis dataKey="model" tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
                 <YAxis domain={yDomain} tickFormatter={(v) => formatNum(v)} width={78} tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
-                <Tooltip contentStyle={{ backgroundColor: "#070b16", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", color: "#fff" }} formatter={(val: any) => [formatNum(val), "Prognoza"]} />
-                <Bar dataKey="value" name="Prognoza" fill="#22d3ee" radius={[10, 10, 0, 0]} />
+                <Tooltip contentStyle={{ backgroundColor: "#070b16", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", color: "#fff" }} formatter={(val: any) => [formatNum(val), t.forecast]} />
+                <Bar dataKey="value" name={t.forecast} fill="#22d3ee" radius={[10, 10, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/20">
-            <div className="border-b border-white/10 bg-black/30 px-4 py-3 text-sm font-medium text-white">Wartości modeli dla H={horizon}</div>
+            <div className="border-b border-white/10 bg-black/30 px-4 py-3 text-sm font-medium text-white">{t.modelValues} H={horizon}</div>
             <div className="overflow-auto">
               <table className="w-full text-sm">
                 <thead className="bg-black/60">
                   <tr className="text-left">
-                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Model</th>
-                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">Wartość</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">{t.model}</th>
+                    <th className="border-b border-white/10 px-3 py-2 text-slate-300">{t.value}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading ? <tr><td className="px-3 py-3 text-slate-400" colSpan={2}>Ładowanie…</td></tr> : null}
-                  {!loading && !modelOptions.length ? <tr><td className="px-3 py-3 text-slate-400" colSpan={2}>Brak danych prognozy. Uruchom pipeline.</td></tr> : null}
+                  {loading ? <tr><td className="px-3 py-3 text-slate-400" colSpan={2}>{t.loading}</td></tr> : null}
+                  {!loading && !modelOptions.length ? <tr><td className="px-3 py-3 text-slate-400" colSpan={2}>{t.noForecastData}</td></tr> : null}
                   {!loading && modelOptions.map((m) => (
                     <tr key={m.key} className="border-t border-white/5 hover:bg-white/5">
                       <td className="px-3 py-2 text-white">{m.label}</td>

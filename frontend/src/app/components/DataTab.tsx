@@ -24,16 +24,90 @@ function fmtDate(v: string) {
   return String(v).slice(0, 10);
 }
 
+function changeColorClass(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "rate-change-zero";
+  }
+
+  if (value > 0) {
+    return "rate-change-positive";
+  }
+
+  if (value < 0) {
+    return "rate-change-negative";
+  }
+
+  return "rate-change-zero";
+}
+
 function withChanges(rows: Row[]) {
   return rows.map((row, i) => {
     const prev = i > 0 ? rows[i - 1] : null;
     const diff = prev ? row.value - prev.value : null;
-    const pct = prev && prev.value !== 0 ? (diff as number) / prev.value * 100 : null;
+    const pct = prev && prev.value !== 0 ? ((diff as number) / prev.value) * 100 : null;
     return { ...row, diff, pct };
   });
 }
 
-export default function DataTab() {
+type Lang = "pl" | "en";
+
+type Props = {
+  lang: Lang;
+};
+
+const text = {
+  pl: {
+    title: "Dane EUR/PLN",
+    subtitle: "Ostatnie obserwacje, zmiany dzienne i szybki podgląd trendu.",
+    limit: "Limit",
+    loading: "Ładowanie...",
+    refresh: "Odśwież",
+    exportXlsx: "Eksportuj XLSX",
+    error: "Błąd",
+    latestRate: "Najnowszy kurs",
+    viewAverage: "Średnia z widoku",
+    min: "Minimum",
+    max: "Maksimum",
+    viewChange: "Zmiana w widoku",
+    trendTitle: "Trend kursu",
+    points: "punktów",
+    tooltipDate: "Data",
+    recentRows: "Ostatnie rekordy",
+    recentRowsSubtitle: "Tabela pokazuje najnowsze dane na górze oraz zmianę względem poprzedniego notowania.",
+    date: "Data",
+    rate: "Kurs",
+    change: "Zmiana",
+    changePct: "Zmiana %",
+    noData: "Brak danych.",
+  },
+  en: {
+    title: "EUR/PLN Data",
+    subtitle: "Recent observations, daily changes, and a quick trend preview.",
+    limit: "Limit",
+    loading: "Loading...",
+    refresh: "Refresh",
+    exportXlsx: "Export XLSX",
+    error: "Error",
+    latestRate: "Latest rate",
+    viewAverage: "View average",
+    min: "Minimum",
+    max: "Maximum",
+    viewChange: "Change in view",
+    trendTitle: "Exchange rate trend",
+    points: "points",
+    tooltipDate: "Date",
+    recentRows: "Recent records",
+    recentRowsSubtitle: "The table shows the newest data first and the change versus the previous quotation.",
+    date: "Date",
+    rate: "Rate",
+    change: "Change",
+    changePct: "Change %",
+    noData: "No data.",
+  },
+};
+
+export default function DataTab({ lang }: Props) {
+  const t = text[lang];
   const [rows, setRows] = useState<Row[]>([]);
   const [limit, setLimit] = useState(500);
   const [busy, setBusy] = useState(false);
@@ -87,13 +161,13 @@ export default function DataTab() {
       <Card className="app-card rounded-3xl p-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-white">Dane EUR/PLN</h2>
-            <p className="mt-1 text-sm text-slate-400">Ostatnie obserwacje, zmiany dzienne i szybki podgląd trendu.</p>
+            <h2 className="text-2xl font-semibold text-white">{t.title}</h2>
+            <p className="mt-1 text-sm text-slate-400">{t.subtitle}</p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="flex items-center gap-2 text-sm text-slate-300">
-              <span>Limit</span>
+              <span>{t.limit}</span>
               <input
                 type="number"
                 min={50}
@@ -106,12 +180,12 @@ export default function DataTab() {
 
             <Button variant="outline" className="app-button" onClick={handleReload} disabled={busy}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              {busy ? "Ładowanie..." : "Odśwież"}
+              {busy ? t.loading : t.refresh}
             </Button>
 
             <Button variant="outline" className="app-button" onClick={handleExportXlsx}>
               <Download className="mr-2 h-4 w-4" />
-              Eksportuj XLSX
+              {t.exportXlsx}
             </Button>
           </div>
         </div>
@@ -119,31 +193,35 @@ export default function DataTab() {
 
       {err ? (
         <Card className="app-card rounded-3xl border-red-500/30 bg-red-500/10 p-4">
-          <div className="text-sm text-red-200">Błąd: {err}</div>
+          <div className="text-sm text-red-200">{t.error}: {err}</div>
         </Card>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Card className="app-kpi p-5">
-          <div className="text-xs uppercase tracking-wider text-slate-400">Najnowszy kurs</div>
+          <div className="text-xs uppercase tracking-wider text-slate-400">{t.latestRate}</div>
           <div className="mt-3 text-2xl font-semibold text-white">{fmt4(stats.latest?.value)} zł</div>
           <div className="mt-2 text-xs text-slate-500">{fmtDate(stats.latest?.date ?? "")}</div>
         </Card>
+
         <Card className="app-kpi p-5">
-          <div className="text-xs uppercase tracking-wider text-slate-400">Średnia z widoku</div>
+          <div className="text-xs uppercase tracking-wider text-slate-400">{t.viewAverage}</div>
           <div className="mt-3 text-2xl font-semibold text-white">{fmt4(stats.avg)} zł</div>
         </Card>
+
         <Card className="app-kpi p-5">
-          <div className="text-xs uppercase tracking-wider text-slate-400">Minimum</div>
+          <div className="text-xs uppercase tracking-wider text-slate-400">{t.min}</div>
           <div className="mt-3 text-2xl font-semibold text-white">{fmt4(stats.min)} zł</div>
         </Card>
+
         <Card className="app-kpi p-5">
-          <div className="text-xs uppercase tracking-wider text-slate-400">Maksimum</div>
+          <div className="text-xs uppercase tracking-wider text-slate-400">{t.max}</div>
           <div className="mt-3 text-2xl font-semibold text-white">{fmt4(stats.max)} zł</div>
         </Card>
+
         <Card className="app-kpi p-5">
-          <div className="text-xs uppercase tracking-wider text-slate-400">Zmiana w widoku</div>
-          <div className={`mt-3 text-2xl font-semibold ${stats.totalChange != null && stats.totalChange < 0 ? "text-red-300" : "text-emerald-300"}`}>
+          <div className="text-xs uppercase tracking-wider text-slate-400">{t.viewChange}</div>
+          <div className={`mt-3 text-2xl font-semibold ${changeColorClass(stats.totalChange)}`}>
             {fmt4(stats.totalChange)} zł
           </div>
         </Card>
@@ -151,19 +229,41 @@ export default function DataTab() {
 
       <Card className="app-card rounded-3xl p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Trend kursu</h3>
-          <span className="text-sm text-slate-400">{rows.length} punktów</span>
+          <h3 className="text-lg font-semibold text-white">{t.trendTitle}</h3>
+          <span className="text-sm text-slate-400">
+            {rows.length} {t.points}
+          </span>
         </div>
+
         <div className="h-[360px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={rows} margin={{ top: 12, right: 18, left: 8, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDate} tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} minTickGap={28} />
-              <YAxis domain={yDomain} tickFormatter={(v) => fmt4(Number(v))} width={78} tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.08)" }} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDate}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
+                tickLine={false}
+                axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+                minTickGap={28}
+              />
+              <YAxis
+                domain={yDomain}
+                tickFormatter={(v) => fmt4(Number(v))}
+                width={78}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
+                tickLine={false}
+                axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+              />
               <Tooltip
-                contentStyle={{ backgroundColor: "#070b16", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", color: "#fff" }}
+                contentStyle={{
+                  backgroundColor: "#070b16",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: "16px",
+                  color: "#fff",
+                }}
                 formatter={(val: any) => [fmt4(Number(val)), "EUR/PLN"]}
-                labelFormatter={(l) => `Data: ${fmtDate(String(l))}`}
+                labelFormatter={(l) => `${t.tooltipDate}: ${fmtDate(String(l))}`}
               />
               <Line type="monotone" dataKey="value" dot={false} strokeWidth={2.5} stroke="#f59e0b" name="EUR/PLN" />
             </LineChart>
@@ -173,31 +273,41 @@ export default function DataTab() {
 
       <Card className="app-card rounded-3xl p-6">
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-white">Ostatnie rekordy</h3>
-          <p className="text-sm text-slate-400">Tabela pokazuje najnowsze dane na górze oraz zmianę względem poprzedniego notowania.</p>
+          <h3 className="text-lg font-semibold text-white">{t.recentRows}</h3>
+          <p className="text-sm text-slate-400">{t.recentRowsSubtitle}</p>
         </div>
+
         <div className="max-h-[560px] overflow-auto rounded-2xl border border-white/10">
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-black/70 backdrop-blur-xl">
               <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-slate-300">Data</TableHead>
-                <TableHead className="text-slate-300">Kurs</TableHead>
-                <TableHead className="text-slate-300">Zmiana</TableHead>
-                <TableHead className="text-slate-300">Zmiana %</TableHead>
+                <TableHead className="text-slate-300">{t.date}</TableHead>
+                <TableHead className="text-slate-300">{t.rate}</TableHead>
+                <TableHead className="text-slate-300">{t.change}</TableHead>
+                <TableHead className="text-slate-300">{t.changePct}</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {newestFirst.length === 0 ? (
                 <TableRow className="border-white/5">
-                  <TableCell className="text-slate-400" colSpan={4}>Brak danych.</TableCell>
+                  <TableCell className="text-slate-400" colSpan={4}>
+                    {t.noData}
+                  </TableCell>
                 </TableRow>
               ) : (
                 newestFirst.map((row, index) => (
                   <TableRow key={`${row.date}-${index}`} className="border-white/5 transition-colors hover:bg-white/5">
                     <TableCell className="font-mono text-sm text-white">{fmtDate(row.date)}</TableCell>
                     <TableCell className="font-mono text-sm text-white">{fmt4(row.value)}</TableCell>
-                    <TableCell className={`font-mono text-sm ${row.diff != null && row.diff < 0 ? "text-red-300" : "text-emerald-300"}`}>{fmt4(row.diff)}</TableCell>
-                    <TableCell className={`font-mono text-sm ${row.pct != null && row.pct < 0 ? "text-red-300" : "text-emerald-300"}`}>{row.pct == null ? "—" : `${fmt2(row.pct)}%`}</TableCell>
+
+                    <TableCell className={`font-mono text-sm ${changeColorClass(row.diff)}`}>
+                      {fmt4(row.diff)}
+                    </TableCell>
+
+                    <TableCell className={`font-mono text-sm ${changeColorClass(row.pct)}`}>
+                      {row.pct == null ? "—" : `${fmt2(row.pct)}%`}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
